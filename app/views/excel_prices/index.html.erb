@@ -58,9 +58,11 @@
         <td>
         <% if excel_price.file_status == true %>
           <%= link_to '<span class="oi oi-cloud-download"></span>'.html_safe, file_export_excel_price_path(excel_price), id: "file_export_#{excel_price.id}", class: "btn btn-light btn-sm", title: "file export" %>
-        <% file = "#{Rails.public_path}/#{excel_price.id.to_s}_file.xlsx" %>
-        <% size = File.size(file) %>
-        <%= number_to_human_size(size)%>
+          <% file = "#{Rails.public_path}/#{excel_price.id.to_s}_file.xlsx" %>
+          <%if File.file?(file) %>
+          <% size = File.size(file) %>
+          <%= number_to_human_size(size) %>
+          <% end %>
         <% else %>
           <%= link_to '<span class="oi oi-cloud-download"></span>'.html_safe, file_export_excel_price_path(excel_price), id: "file_export_#{excel_price.id}", class: "btn btn-light btn-sm disabled", title: "file export" %>
         <% end %>
