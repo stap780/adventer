@@ -104,10 +104,13 @@ class Services::Import
       # end
       count_rows = (categories_for_list.count/4).ceil
       puts "count_rows - "+count_rows.to_s
+      puts "start create main sheet rows"
       Array(0..count_rows).each do |arr|
         sheet.add_row ['','','','','','','',''], height: 150
         sheet.add_row ['','','','','','','',''], height: 40, style: [nil,main_label,nil,main_label,nil,main_label,nil,main_label]
       end
+      puts "finish create main sheet rows"
+      puts "start add collections to main sheet"
       categories_for_list.each_with_index do |cat, index|
           column_start = start_array[index][0]
           row_start = start_array[index][1]
@@ -129,13 +132,16 @@ class Services::Import
           end
           sheet.add_hyperlink( location: "'#{cat[:title].at(0..30)}'!A1", target: :sheet, ref: sheet.rows[row_end+1].cells[column_end] )
       end
+      puts "finish add collections to main sheet"
 
       sheet.column_widths 2,25,2,25,2,25,2,25,2
       sheet.merge_cells('A4:I4')
     end
 
     row_index_for_titles_array = []
+    puts "start create seconds collections sheet"
     categories_for_list.each_with_index do |cat, index|
+      puts "start create sheet - "+cat[:title]
         wb.add_worksheet(name: cat[:title].at(0..30)) do |sheet|
           sheet.add_row ["<= НА ГЛАВНУЮ",'', cat[:title]], style: [nil, nil, ind_header]
           second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
@@ -144,7 +150,7 @@ class Services::Import
               cat_title_row = sheet.add_row ['',s_cat[:title]], style: header_second, height: 30
               row_index_for_titles_array.push(cat_title_row.row_index+1)
               sheet.add_row ['','Название','Описание','Картинка','Цена'], style: tbl_header, height: 20
-              cat_products = offers.select{|item| item.css('categoryId').text == s_cat[:id]}
+              cat_products = Rails.env.development? ? offers.select{|item| item.css('categoryId').text == s_cat[:id]}.take(1) : offers.select{|item| item.css('categoryId').text == s_cat[:id]}
               cat_products.each do |pr|
                 price = Services::Import.price_shift(excel_price, pr.css('price').text)
                 pr_row = sheet.add_row ['',pr.css('model').text, pr.css('description').text, '', price], style: [nil, pr_title, pr_descr, pr_pict, money]
@@ -171,7 +177,7 @@ class Services::Import
             cat_title_row = sheet.add_row ['',cat[:title]], style: header_second, height: 30
             row_index_for_titles_array.push(cat_title_row.row_index+1)
             sheet.add_row ['','Название','Описание','Картинка','Цена'], style: tbl_header, height: 20
-            cat_products = offers.select{|item| item.css('categoryId').text == cat[:id]}
+            cat_products = Rails.env.development? ? offers.select{|item| item.css('categoryId').text == cat[:id]}.take(5) : offers.select{|item| item.css('categoryId').text == cat[:id]}
             cat_products.each do |pr|
               price = Services::Import.price_shift(excel_price, pr.css('price').text)
               pr_row = sheet.add_row ['',pr.css('model').text, pr.css('description').text, '', price], style: [nil, pr_title, pr_descr, pr_pict, money]
@@ -200,13 +206,15 @@ class Services::Import
           merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"E"+a.to_s }
           merge_ranges.uniq.each { |range| sheet.merge_cells(range) }
         end
-    end  
+      puts "finish create sheet - "+cat[:title]
+    end
+    puts "finish create seconds collections sheet"
 
     stream = p.to_stream
     file_path = "#{Rails.public_path}/#{excel_price.id.to_s}_file.xlsx"
     File.open(file_path, 'wb') { |f| f.write(stream.read) }
 
-    excel_price.update!(file_status: true) if File.file?(download_path).present?
+    excel_price.update!(file_status: true) if File.file?(file_path).present?
     File.delete(download_path) if File.file?(download_path).present?
 
     puts "=====>>>> FINISH import excel_price #{Time.now.to_s}"
@@ -230,10 +238,6 @@ class Services::Import
     end
     # puts "categories_main_list - "+categories_main_list.to_s
     categories_main_list
-  end
-
-  def self.collect_cat_products(offers, cat_id)
-    products = offers.map{|item| item.xpath('categoryId') == cat_id }
   end
 
   def self.download_remote_file(url)
