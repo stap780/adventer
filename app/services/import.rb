@@ -80,15 +80,16 @@ class Services::Import
     ind_header = s.add_style bg_color: 'CDE3E3', sz: 16, b: true, alignment: { horizontal: :center, vertical: :center , indent: 1 }
     col_header = s.add_style bg_color: 'FFDFDEDF', b: true, alignment: { horizontal: :center , vertical: :center }
     label      = s.add_style alignment: { indent: 1 }
-    money      = s.add_style alignment: { horizontal: :center , vertical: :center }, format_code: "# ##0\ ₽", border: Axlsx::STYLE_THIN_BORDER #num_fmt: 7
+    money      = s.add_style alignment: { horizontal: :center , vertical: :center }, format_code: "# ##0\ ₽", border: Axlsx::STYLE_THIN_BORDER, b: true
     main_label = s.add_style bg_color: 'F2F2F2', alignment: { horizontal: :center, vertical: :center, indent: 0, wrap_text: true }
-    pr_title   = s.add_style alignment: { horizontal: :left , vertical: :center, indent: 1, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER
+    pr_title   = s.add_style alignment: { horizontal: :left , vertical: :center, indent: 1, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER, b: true
+    pr_sku   = s.add_style alignment: { horizontal: :left , vertical: :center, indent: 1, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER
     pr_descr   = s.add_style alignment: { horizontal: :left , vertical: :center, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER
     pr_pict    = s.add_style alignment: { horizontal: :center , vertical: :center },border: Axlsx::STYLE_THIN_BORDER
     pr_index   = s.add_style alignment: { horizontal: :center , vertical: :center, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER
     back_button = s.add_style alignment: { horizontal: :center , vertical: :center, wrap_text: true }, bg_color: 'B4D5D5', sz: 14
     bg_w = s.add_style bg_color: 'FFFFFF'
-    but_rekv = s.add_style bg_color: 'FFFFFF', alignment: { horizontal: :left , vertical: :top, indent: 1, wrap_text: true }
+    but_rekv = s.add_style bg_color: 'FFFFFF', alignment: { horizontal: :left , vertical: :top, indent: 1, wrap_text: true }, fg_color: 'B2BEB5'
 
 
     start_array_string = {0=>'B6',1=>'D6',2=>'F6',3=>'H6',4=>'B8',5=>'D8',6=>'F8',7=>'H8',8=>'B10',9=>'D10',10=>'F10',11=>'H10'}
@@ -193,7 +194,7 @@ class Services::Import
                 price = Services::Import.price_shift(excel_price, pr.css('price').text)
                 pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
                 #puts pr_data.to_s if pr['id'] == '139020547'
-                pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_title,pr_descr,money], height: 110
+                pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 110
                 # puts "pr_row.row_index - "+pr_row.row_index.to_s
                 hyp_ref = "D#{(pr_row.row_index+1).to_s}"
                 # puts hyp_ref.to_s
@@ -225,7 +226,7 @@ class Services::Import
               price = Services::Import.price_shift(excel_price, pr.css('price').text)
               pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
               #puts pr_data.to_s if pr['id'] == '139020547'
-              pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_title,pr_descr,money], height: 110
+              pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 110
               # puts "pr_row.row_index - "+pr_row.row_index.to_s
               hyp_ref = "D#{(pr_row.row_index+1).to_s}"
               sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
