@@ -144,8 +144,8 @@ class Services::Import
       sheet.column_widths 2,25,2,25,2,25,2,25,10,50,10
       sheet.merge_cells('B4:H4')
       sheet.merge_cells('J6:J11')
-      image = Services::Import.load_convert_image('https://static.insales-cdn.com/assets/1/5387/1651979/1666857192/logo.png', 'logo')
-      sheet.add_image(image_src: image, start_at: 'B1', end_at: 'E4')
+      logo_image = Services::Import.load_convert_image('https://static.insales-cdn.com/assets/1/5387/1651979/1666857192/logo.png', 'logo')
+      sheet.add_image(image_src: logo_image, start_at: 'B1', end_at: 'E4')
       sheet['J6'].value = 'Общество с ограниченной ответственностью «Адвентер»
 
 188802, ЛО, г.Выборг, ул. Данилова, д.15 корп.1, оф.248
