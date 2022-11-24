@@ -145,7 +145,7 @@ class Services::Import
       sheet.merge_cells('B4:H4')
       sheet.merge_cells('J6:J11')
       logo_image = Services::Import.load_convert_image('http://157.245.114.19/adventer_logo_excel.jpg', 'logo')
-      sheet.add_image(image_src: logo_image, start_at: 'B1', end_at: 'E4')
+      sheet.add_image(image_src: logo_image, start_at: 'A1', end_at: 'L4')
       sheet['J6'].value = 'Общество с ограниченной ответственностью «Адвентер»
 
 188802, ЛО, г.Выборг, ул. Данилова, д.15 корп.1, оф.248
@@ -247,7 +247,7 @@ class Services::Import
 
           sheet.merge_cells("A1:C1")
           sheet.merge_cells("D1:G1")
-          sheet.add_hyperlink( location: "'Main'!A7", target: :sheet, ref: 'B1' )
+          sheet.add_hyperlink( location: "'Навигация по каталогу'!A7", target: :sheet, ref: 'B1' )
           sheet.column_widths 2,10,20,40,40,40,40,2
           merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
           merge_ranges.uniq.each { |range| sheet.merge_cells(range) }
