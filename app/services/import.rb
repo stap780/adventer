@@ -74,29 +74,29 @@ class Services::Import
     wb = p.workbook
     
     s = wb.styles
-    header = s.add_style bg_color: 'DD', sz: 16, b: true, alignment: { horizontal: :center, vertical: :center }
+    header = s.add_style sz: 16, b: true, alignment: { horizontal: :center, vertical: :center } #bg_color: 'DD',
     header_second =  s.add_style bg_color: 'E6F1F1', sz: 14, b: true, alignment: { horizontal: :center, vertical: :center }
     tbl_header = s.add_style b: true, alignment: { horizontal: :center, vertical: :center  }
     ind_header = s.add_style bg_color: 'CDE3E3', sz: 16, b: true, alignment: { horizontal: :center, vertical: :center , indent: 1 }
     col_header = s.add_style bg_color: 'FFDFDEDF', b: true, alignment: { horizontal: :center , vertical: :center }
     label      = s.add_style alignment: { indent: 1 }
     money      = s.add_style alignment: { horizontal: :center , vertical: :center }, format_code: "# ##0\ ₽", border: Axlsx::STYLE_THIN_BORDER, b: true
-    main_label = s.add_style bg_color: 'F2F2F2', alignment: { horizontal: :center, vertical: :center, indent: 0, wrap_text: true }
+    main_label = s.add_style bg_color: 'E6F1F1', alignment: { horizontal: :center, vertical: :center, indent: 0, wrap_text: true }, b: true
     pr_title   = s.add_style alignment: { horizontal: :left , vertical: :center, indent: 1, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER, b: true
     pr_sku   = s.add_style alignment: { horizontal: :left , vertical: :center, indent: 1, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER
-    pr_descr   = s.add_style alignment: { horizontal: :left , vertical: :center, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER
+    pr_descr   = s.add_style alignment: { horizontal: :left , vertical: :center, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER, sz: 10
     pr_pict    = s.add_style alignment: { horizontal: :center , vertical: :center },border: Axlsx::STYLE_THIN_BORDER
     pr_index   = s.add_style alignment: { horizontal: :center , vertical: :center, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER
     back_button = s.add_style alignment: { horizontal: :center , vertical: :center, wrap_text: true }, bg_color: 'B4D5D5', sz: 14
     bg_w = s.add_style bg_color: 'FFFFFF'
-    but_rekv = s.add_style bg_color: 'FFFFFF', alignment: { horizontal: :left , vertical: :top, indent: 1, wrap_text: true }, fg_color: 'B2BEB5'
+    but_rekv = s.add_style bg_color: 'FFFFFF', alignment: { horizontal: :left , vertical: :top, indent: 1, wrap_text: true }, fg_color: '7F7F7F'
 
 
     start_array_string = {0=>'B6',1=>'D6',2=>'F6',3=>'H6',4=>'B8',5=>'D8',6=>'F8',7=>'H8',8=>'B10',9=>'D10',10=>'F10',11=>'H10'}
     # end_array = {0=>'C7',1=>'E7',2=>'G7',3=>'I7',4=>'C9',5=>'E9',6=>'G9',7=>'I9',8=>'C11',9=>'E11',10=>'G11',11=>'I11'}
     start_array = {0=>[1,5],1=>[3,5],2=>[5,5],3=>[7,5],4=>[1,7],5=>[3,7],6=>[5,7],7=>[7,7],8=>[1,9],9=>[3,9],10=>[5,9],11=>[7,9]}
     end_array = {0=>[2,6],1=>[4,6],2=>[6,6],3=>[8,6],4=>[2,8],5=>[4,8],6=>[6,8],7=>[8,8],8=>[2,10],9=>[4,10],10=>[6,10],11=>[8,10]}
-    wb.add_worksheet(name: 'Main') do |sheet|
+    wb.add_worksheet(name: 'Навигация по каталогу') do |sheet|
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
@@ -144,13 +144,13 @@ class Services::Import
       sheet.column_widths 2,25,2,25,2,25,2,25,10,50,10
       sheet.merge_cells('B4:H4')
       sheet.merge_cells('J6:J11')
-      logo_image = Services::Import.load_convert_image('https://static.insales-cdn.com/assets/1/5387/1651979/1666857192/logo.png', 'logo')
+      logo_image = Services::Import.load_convert_image('http://157.245.114.19/adventer_logo_excel.jpg', 'logo')
       sheet.add_image(image_src: logo_image, start_at: 'B1', end_at: 'E4')
       sheet['J6'].value = 'Общество с ограниченной ответственностью «Адвентер»
 
 188802, ЛО, г.Выборг, ул. Данилова, д.15 корп.1, оф.248
       
-Тел. 89218800978
+Тел. 8 800 550 13 14
 эл.почта: info@adventer.su
 Сайт:  www.adventer.su
       
@@ -205,7 +205,7 @@ class Services::Import
                 # puts "image -"+image
                 # puts "start_array[index].to_s - "+start_array[index].to_s
                 # puts "end_array[index].to_s - "+end_array[index].to_s
-                sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
+                sheet.add_image(image_src: image, :noSelect => true, :noMove => true, hyperlink: pr.css('url').text) do |image|
                   # image.width = 100
                   image.height = 90
                   image.start_at 2, pr_row.row_index
