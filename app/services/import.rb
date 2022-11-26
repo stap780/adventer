@@ -90,18 +90,25 @@ class Services::Import
     back_button = s.add_style alignment: { horizontal: :center , vertical: :center, wrap_text: true }, bg_color: 'B4D5D5', sz: 14
     bg_w = s.add_style bg_color: 'FFFFFF'
     but_rekv = s.add_style bg_color: 'FFFFFF', alignment: { horizontal: :left , vertical: :top, indent: 1, wrap_text: true }, fg_color: '7F7F7F'
+    notice_main_label = s.add_style bg_color: 'FFFFFF', alignment: { horizontal: :center , vertical: :top }
+    notice_label = s.add_style bg_color: 'FDE9D9', alignment: { horizontal: :center , vertical: :center}, b: true, sz: 12
+    notice_b = s.add_style bg_color: 'FDE9D9', alignment: { horizontal: :center , vertical: :center }, sz: 12
 
 
     start_array_string = {0=>'B6',1=>'D6',2=>'F6',3=>'H6',4=>'B8',5=>'D8',6=>'F8',7=>'H8',8=>'B10',9=>'D10',10=>'F10',11=>'H10'}
     # end_array = {0=>'C7',1=>'E7',2=>'G7',3=>'I7',4=>'C9',5=>'E9',6=>'G9',7=>'I9',8=>'C11',9=>'E11',10=>'G11',11=>'I11'}
     start_array = {0=>[1,5],1=>[3,5],2=>[5,5],3=>[7,5],4=>[1,7],5=>[3,7],6=>[5,7],7=>[7,7],8=>[1,9],9=>[3,9],10=>[5,9],11=>[7,9]}
     end_array = {0=>[2,6],1=>[4,6],2=>[6,6],3=>[8,6],4=>[2,8],5=>[4,8],6=>[6,8],7=>[8,8],8=>[2,10],9=>[4,10],10=>[6,10],11=>[8,10]}
+    notice_text_main_sheet = Axlsx::RichText.new
+    notice_text_main_sheet.add_run('Подсказка: ', b: true, color: 'EA4488')
+    notice_text_main_sheet.add_run('для того чтобы открыть нужную категорию нажмите на название или вкладку')
+  
     wb.add_worksheet(name: 'Навигация по каталогу') do |sheet|
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
       sheet.add_row ['','Каталог продукции','','','','','','','','Реквизиты',''], height: 50, style: [bg_w,header,bg_w,bg_w,bg_w,bg_w,bg_w,bg_w,bg_w,header,bg_w]
-      sheet.add_row ['','','','','','','','','','',''], height: 10, style: bg_w
+      sheet.add_row ['',notice_text_main_sheet,'','','','','','','','',''], height: 20, style: notice_main_label
       # categories_for_list.each_with_index do |cat, index|
       #   # puts "index - "+index.to_s
       #   # puts "start_array index - "+start_array[index].to_s
@@ -143,6 +150,7 @@ class Services::Import
 
       sheet.column_widths 2,25,2,25,2,25,2,25,10,50,10
       sheet.merge_cells('B4:H4')
+      sheet.merge_cells('B5:H5')
       sheet.merge_cells('J6:J11')
       logo_image = Services::Import.load_convert_image('http://157.245.114.19/adventer_logo_excel.jpg', 'logo')
       sheet.add_image(image_src: logo_image, start_at: 'A1', end_at: 'L4')
@@ -178,12 +186,16 @@ class Services::Import
     puts "start create seconds collections sheet"
     categories_for_list.each_with_index do |cat, index|
       puts "start create sheet - "+cat[:title]
+      notice_text = Axlsx::RichText.new
+      notice_text.add_run('Подсказка: ', :b => true)
+      notice_text.add_run('для того чтобы открыть позицию на сайте нажмите на наименование/фото товара')
         wb.add_worksheet(name: cat[:title].at(0..30)) do |sheet|
-          sheet.add_row ["<= НА ГЛАВНУЮ",'','', cat[:title]], style: [back_button,back_button,back_button,ind_header], height: 30
+          sheet.add_row ['','<= НА ГЛАВНУЮ','', cat[:title]], style: [nil,back_button,back_button,ind_header], height: 30
+          sheet.add_row ['',notice_text,'','','','',''], style: [nil,notice_b,notice_label,notice_b,notice_b,notice_b,notice_b,notice_b], height: 20
           second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
           if second_cats.present?
             second_cats.each do |s_cat|
-              cat_title_row = sheet.add_row ['',s_cat[:title]], style: header_second, height: 30
+              cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
               row_index_for_titles_array.push(cat_title_row.row_index+1)
               sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
               cat_products = Rails.env.development? ? offers.select{|item| item.css('categoryId').text == s_cat[:id]}.take(2) : offers.select{|item| item.css('categoryId').text == s_cat[:id]}
@@ -219,7 +231,7 @@ class Services::Import
             end
           end
           if !second_cats.present?
-            cat_title_row = sheet.add_row ['',cat[:title]], style: header_second, height: 30
+            cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
             row_index_for_titles_array.push(cat_title_row.row_index+1)
             sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
             cat_products = Rails.env.development? ? offers.select{|item| item.css('categoryId').text == cat[:id]}.take(2) : offers.select{|item| item.css('categoryId').text == cat[:id]}
@@ -249,18 +261,22 @@ class Services::Import
             end
           end
 
-          sheet.merge_cells("A1:C1")
+          sheet.merge_cells("B1:C1")
           sheet.merge_cells("D1:G1")
+          sheet.merge_cells("B2:G2")
           sheet.add_hyperlink( location: "'Навигация по каталогу'!A7", target: :sheet, ref: 'B1' )
           sheet.column_widths 2,10,25,40,40,40,40,2
           merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
           merge_ranges.uniq.each { |range| sheet.merge_cells(range) }
           sheet.sheet_view.pane do |pane|
-            pane.top_left_cell = 'B2'
-            pane.state = :frozen_split
-            pane.y_split = 1
+            # pane.top_left_cell = 'A2'
+            # pane.state = :frozen_split
+            # pane.y_split = 1
+            # pane.x_split = 1
+            # pane.active_pane = :bottom_right
+            pane.state = :frozen
             pane.x_split = 1
-            pane.active_pane = :bottom_right
+            pane.y_split = 2
           end
         end
       puts "finish create sheet - "+cat[:title]
