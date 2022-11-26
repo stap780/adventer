@@ -136,7 +136,7 @@ class Services::Import
           download_path = "#{Rails.public_path}/excel_price/"+temp_filename
           IO.copy_stream(download, download_path)
           new_image_link = Rails.env.development? ? "http://localhost:3000/excel_price/"+temp_filename : "http://157.245.114.19/excel_price/"+temp_filename
-          puts new_image_link
+          # puts new_image_link
           file_name = cat[:id]
           # image = Services::Import.load_convert_image(cat[:image], file_name)
           image = Services::Import.load_convert_image(new_image_link, file_name)
