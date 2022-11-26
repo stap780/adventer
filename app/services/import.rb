@@ -128,18 +128,8 @@ class Services::Import
 
           sheet.rows[row_end+1].cells[column_end].value = cat[:title]
           sheet.rows[row_end+1].cells[column_end].style = main_label
-
-
-          url = cat[:image]
-          temp_filename = "temp_"+cat[:id].to_s+"."+url.split('.').last
-          download = open(url)
-          download_path = "#{Rails.public_path}/excel_price/"+temp_filename
-          IO.copy_stream(download, download_path)
-          new_image_link = Rails.env.development? ? "http://localhost:3000/excel_price/"+temp_filename : "http://157.245.114.19/excel_price/"+temp_filename
-          # puts new_image_link
           file_name = cat[:id]
-          # image = Services::Import.load_convert_image(cat[:image], file_name)
-          image = Services::Import.load_convert_image(new_image_link, file_name)
+          image = Services::Import.load_convert_image(cat[:image], file_name)
           # puts "image -"+image
           # puts "start_array[index].to_s - "+start_array[index].to_s
           # puts "end_array[index].to_s - "+end_array[index].to_s
@@ -216,8 +206,9 @@ class Services::Import
                 hyp_ref = "D#{(pr_row.row_index+1).to_s}"
                 # puts hyp_ref.to_s
                 sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
-                file_name = pr['id']
+
                 picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
+                file_name = pr['id']
                 image = Services::Import.load_convert_image(picture_link, file_name)
                 # image_width = MiniMagick::Image.open(image)[:width].to_i
                 # image_height = MiniMagick::Image.open(image)[:height].to_i
@@ -251,10 +242,11 @@ class Services::Import
               # puts "pr_row.row_index - "+pr_row.row_index.to_s
               hyp_ref = "D#{(pr_row.row_index+1).to_s}"
               sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
+              
+              picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
               file_name = pr['id']
-              picture = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
-              image = Services::Import.load_convert_image(picture, file_name)
-              # puts "image -"+image
+              image = Services::Import.load_convert_image(picture_link, file_name)
+            # puts "image -"+image
               # puts "start_array[index].to_s - "+start_array[index].to_s
               # puts "end_array[index].to_s - "+end_array[index].to_s
               sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
@@ -331,8 +323,15 @@ class Services::Import
     RestClient.get( input_path ) { |response, request, result, &block|
       case response.code
       when 200
-        image_process = ImageProcessing::MiniMagick.source(input_path)
-        result = file_name == "logo" ? input_path : image_process.resize_and_pad!(200, 200).path
+
+        temp_filename = "temp_"+file_name+"."+input_path.split('.').last
+        download = open(input_path)
+        download_path = "#{Rails.public_path}/excel_price/"+temp_filename
+        IO.copy_stream(download, download_path)
+        new_image_link = Rails.env.development? ? "http://localhost:3000/excel_price/"+temp_filename : "http://157.245.114.19/excel_price/"+temp_filename
+
+        image_process = ImageProcessing::MiniMagick.source(new_image_link)
+        result = file_name == "logo" ? new_image_link : image_process.resize_and_pad!(200, 200).path
         image_magic = MiniMagick::Image.open(result)
         convert_image = image_magic.format("jpeg")
         convert_image.write("#{Rails.public_path}/excel_price/#{file_name}.jpeg")
@@ -340,17 +339,21 @@ class Services::Import
       when 400
         puts "image have 400 response"
         input_path = "http://157.245.114.19/kp_logo_footer.png"
-        image_magic = MiniMagick::Image.open(input_path)
+        image_process = ImageProcessing::MiniMagick.source(input_path)
+        result = file_name == "logo" ? new_image_link : image_process.resize_and_pad!(200, 200).path
+        image_magic = MiniMagick::Image.open(result)
         convert_image = image_magic.format("jpeg")
         convert_image.write("#{Rails.public_path}/excel_price/#{file_name}.jpeg")
-        image = File.expand_path("public/excel_price/#{file_name}.jpeg")    
+        image = File.expand_path("public/excel_price/#{file_name}.jpeg")
       when 404
         puts "image have 404 response"
         input_path = "http://157.245.114.19/kp_logo_footer.png"
-        image_magic = MiniMagick::Image.open(input_path)
+        image_process = ImageProcessing::MiniMagick.source(input_path)
+        result = file_name == "logo" ? new_image_link : image_process.resize_and_pad!(200, 200).path
+        image_magic = MiniMagick::Image.open(result)
         convert_image = image_magic.format("jpeg")
         convert_image.write("#{Rails.public_path}/excel_price/#{file_name}.jpeg")
-        image = File.expand_path("public/excel_price/#{file_name}.jpeg")    
+        image = File.expand_path("public/excel_price/#{file_name}.jpeg")
       else
         response.return!(&block)
       end
