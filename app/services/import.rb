@@ -194,7 +194,7 @@ class Services::Import
                 price = Services::Import.price_shift(excel_price, pr.css('price').text)
                 pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
                 #puts pr_data.to_s if pr['id'] == '139020547'
-                pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 110
+                pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 150
                 # puts "pr_row.row_index - "+pr_row.row_index.to_s
                 hyp_ref = "D#{(pr_row.row_index+1).to_s}"
                 # puts hyp_ref.to_s
@@ -202,14 +202,19 @@ class Services::Import
                 file_name = pr['id']
                 picture = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
                 image = Services::Import.load_convert_image(picture, file_name)
+                image_width = MiniMagick::Image.open(image)[:width].to_i
+                image_height = MiniMagick::Image.open(image)[:height].to_i
                 # puts "image -"+image
                 # puts "start_array[index].to_s - "+start_array[index].to_s
                 # puts "end_array[index].to_s - "+end_array[index].to_s
-                sheet.add_image(image_src: image, :noSelect => true, :noMove => true, hyperlink: pr.css('url').text) do |image|
-                  # image.width = 100
-                  image.height = 90
+                # sheet.add_image(image_src: image, :noSelect => true, :noMove => true, hyperlink: pr.css('url').text) do |image|
+                  sheet.add_image(image_src: image) do |image|
+                  image.width = image_width-5
+                  image.height = image_height-5
                   image.start_at 2, pr_row.row_index
-                  image.end_at 3, pr_row.row_index+1
+                  # image.end_at 3, pr_row.row_index+1
+                  image.anchor.from.rowOff = 10_000
+                  image.anchor.from.colOff = 10_000
                 end            
               end
             end
@@ -248,7 +253,7 @@ class Services::Import
           sheet.merge_cells("A1:C1")
           sheet.merge_cells("D1:G1")
           sheet.add_hyperlink( location: "'Навигация по каталогу'!A7", target: :sheet, ref: 'B1' )
-          sheet.column_widths 2,10,20,40,40,40,40,2
+          sheet.column_widths 2,10,25,40,40,40,40,2
           merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
           merge_ranges.uniq.each { |range| sheet.merge_cells(range) }
           sheet.sheet_view.pane do |pane|
@@ -306,7 +311,14 @@ class Services::Import
     RestClient.get( input_path ) { |response, request, result, &block|
       case response.code
       when 200
-        image_magic = MiniMagick::Image.open(input_path)
+        # image_magic = MiniMagick::Image.open(input_path)
+        # resize_image = file_name == "logo" ? image_magic : Services::Import.resize_with_nocrop(image_magic, 200, 200) 
+        # convert_image = resize_image.format("jpeg")
+        # convert_image.write("#{Rails.public_path}/excel_price/#{file_name}.jpeg")
+        # image = File.expand_path("public/excel_price/#{file_name}.jpeg")
+        image_process = ImageProcessing::MiniMagick.source(input_path)
+        result = file_name == "logo" ? input_path : image_process.resize_and_pad!(200, 200).path
+        image_magic = MiniMagick::Image.open(result)
         convert_image = image_magic.format("jpeg")
         convert_image.write("#{Rails.public_path}/excel_price/#{file_name}.jpeg")
         image = File.expand_path("public/excel_price/#{file_name}.jpeg")
@@ -346,5 +358,100 @@ class Services::Import
     new_price
   end
 
+  # def self.resize_with_nocrop(image, w, h)
+
+  #   w_original = image[:width].to_f
+  #   h_original = image[:height].to_f
+
+  #   if (w_original*h != h_original * w)
+  #     if w_original*h >= h_original * w
+  #       # long width
+  #       w_result = w
+  #       h_result = w_result * (h_original / w_original)
+  #     elsif w_original*h <= h_original * w
+  #       # long height
+  #       h_result = h
+  #       w_result = h_result * (w_original / h_original)
+  #     end
+  #   else
+  #      # good proportions
+  #      h_result = h
+  #      w_result = w
+  #   end
+
+  #   #
+  #   image.resize("#{w_result}x#{h_result}")
+  #   return image
+  # end
+
+  # def resize_nocrop_noscale(image, w,h)
+  #   w_original = image[:width].to_f
+  #   h_original = image[:height].to_f
+
+  #   if w_original < w && h_original < h
+  #     return image
+  #   end
+
+  #   # resize
+  #   image.resize("#{w}x#{h}")
+
+  #   return image
+  # end
+
+  # def resize_with_crop(img, w, h, options = {})
+  #   gravity = options[:gravity] || :center
+
+  #   w_original, h_original = [img[:width].to_f, img[:height].to_f]
+
+  #   op_resize = ''
+
+  #   # check proportions
+  #   if w_original * h < h_original * w
+  #     op_resize = "#{w.to_i}x"
+  #     w_result = w
+  #     h_result = (h_original * w / w_original)
+  #   else
+  #     op_resize = "x#{h.to_i}"
+  #     w_result = (w_original * h / h_original)
+  #     h_result = h
+  #   end
+
+  #   w_offset, h_offset = crop_offsets_by_gravity(gravity, [w_result, h_result], [ w, h])
+
+  #   img.combine_options do |i|
+  #     i.resize(op_resize)
+  #     i.gravity(gravity)
+  #     i.crop "#{w.to_i}x#{h.to_i}+#{w_offset}+#{h_offset}!"
+  #   end
+
+  #   img
+  # end
+
+  # # from http://www.dweebd.com/ruby/resizing-and-cropping-images-to-fixed-dimensions/
+
+  # GRAVITY_TYPES = [ :north_west, :north, :north_east, :east, :south_east, :south, :south_west, :west, :center ]
+
+  # def crop_offsets_by_gravity(gravity, original_dimensions, cropped_dimensions)
+  #   raise(ArgumentError, "Gravity must be one of #{GRAVITY_TYPES.inspect}") unless GRAVITY_TYPES.include?(gravity.to_sym)
+  #   raise(ArgumentError, "Original dimensions must be supplied as a [ width, height ] array") unless original_dimensions.kind_of?(Enumerable) && original_dimensions.size == 2
+  #   raise(ArgumentError, "Cropped dimensions must be supplied as a [ width, height ] array") unless cropped_dimensions.kind_of?(Enumerable) && cropped_dimensions.size == 2
+
+  #   original_width, original_height = original_dimensions
+  #   cropped_width, cropped_height = cropped_dimensions
+
+  #   vertical_offset = case gravity
+  #     when :north_west, :north, :north_east then 0
+  #     when :center, :east, :west then [ ((original_height - cropped_height) / 2.0).to_i, 0 ].max
+  #     when :south_west, :south, :south_east then (original_height - cropped_height).to_i
+  #   end
+
+  #   horizontal_offset = case gravity
+  #     when :north_west, :west, :south_west then 0
+  #     when :center, :north, :south then [ ((original_width - cropped_width) / 2.0).to_i, 0 ].max
+  #     when :north_east, :east, :south_east then (original_width - cropped_width).to_i
+  #   end
+
+  #   return [ horizontal_offset, vertical_offset ]
+  # end
 
 end
