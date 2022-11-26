@@ -200,19 +200,18 @@ class Services::Import
                 # puts hyp_ref.to_s
                 sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
                 file_name = pr['id']
-                picture = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
-                image = Services::Import.load_convert_image(picture, file_name)
-                image_width = MiniMagick::Image.open(image)[:width].to_i
-                image_height = MiniMagick::Image.open(image)[:height].to_i
+                picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
+                image = Services::Import.load_convert_image(picture_link, file_name)
+                # image_width = MiniMagick::Image.open(image)[:width].to_i
+                # image_height = MiniMagick::Image.open(image)[:height].to_i
                 # puts "image -"+image
                 # puts "start_array[index].to_s - "+start_array[index].to_s
                 # puts "end_array[index].to_s - "+end_array[index].to_s
-                # sheet.add_image(image_src: image, :noSelect => true, :noMove => true, hyperlink: pr.css('url').text) do |image|
-                  sheet.add_image(image_src: image) do |image|
-                  image.width = image_width-5
-                  image.height = image_height-5
+                sheet.add_image(image_src: image, :noSelect => true, :noMove => true, hyperlink: pr.css('url').text) do |image|
+                  # image.width = image_width-5
+                  # image.height = image_height-5
                   image.start_at 2, pr_row.row_index
-                  # image.end_at 3, pr_row.row_index+1
+                  image.end_at 3, pr_row.row_index+1
                   image.anchor.from.rowOff = 10_000
                   image.anchor.from.colOff = 10_000
                 end            
