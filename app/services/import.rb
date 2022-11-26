@@ -109,12 +109,7 @@ class Services::Import
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
       sheet.add_row ['','Каталог продукции','','','','','','','','Реквизиты',''], height: 50, style: [bg_w,header,bg_w,bg_w,bg_w,bg_w,bg_w,bg_w,bg_w,header,bg_w]
       sheet.add_row ['',notice_text_main_sheet,'','','','','','','','',''], height: 20, style: notice_main_label
-      # categories_for_list.each_with_index do |cat, index|
-      #   # puts "index - "+index.to_s
-      #   # puts "start_array index - "+start_array[index].to_s
-      #   image = Services::Import.load_convert_image(cat[:image])
-      #   sheet.add_image(image_src: image, start_at: start_array[index].to_s, width: 200, height: 200, noResize: true, noMove: true, noRot: true)
-      # end
+
       count_rows = (categories_for_list.count/4).ceil
       puts "count_rows - "+count_rows.to_s
       puts "start create main sheet rows"
@@ -133,8 +128,18 @@ class Services::Import
 
           sheet.rows[row_end+1].cells[column_end].value = cat[:title]
           sheet.rows[row_end+1].cells[column_end].style = main_label
+
+
+          url = cat[:image]
+          temp_filename = "temp_"+cat[:id].to_s+"."+url.split('.').last
+          download = open(url)
+          download_path = "#{Rails.public_path}/excel_price/"+temp_filename
+          IO.copy_stream(download, download_path)
+          new_image_link = Rails.env.development? ? "http://localhost:3000/excel_price/"+temp_filename : "http://157.245.114.19/excel_price/"+temp_filename
+          puts new_image_link
           file_name = cat[:id]
-          image = Services::Import.load_convert_image(cat[:image], file_name)
+          # image = Services::Import.load_convert_image(cat[:image], file_name)
+          image = Services::Import.load_convert_image(new_image_link, file_name)
           # puts "image -"+image
           # puts "start_array[index].to_s - "+start_array[index].to_s
           # puts "end_array[index].to_s - "+end_array[index].to_s
