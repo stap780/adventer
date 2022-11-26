@@ -310,11 +310,6 @@ class Services::Import
     RestClient.get( input_path ) { |response, request, result, &block|
       case response.code
       when 200
-        # image_magic = MiniMagick::Image.open(input_path)
-        # resize_image = file_name == "logo" ? image_magic : Services::Import.resize_with_nocrop(image_magic, 200, 200) 
-        # convert_image = resize_image.format("jpeg")
-        # convert_image.write("#{Rails.public_path}/excel_price/#{file_name}.jpeg")
-        # image = File.expand_path("public/excel_price/#{file_name}.jpeg")
         image_process = ImageProcessing::MiniMagick.source(input_path)
         result = file_name == "logo" ? input_path : image_process.resize_and_pad!(200, 200).path
         image_magic = MiniMagick::Image.open(result)
