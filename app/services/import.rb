@@ -251,10 +251,12 @@ class Services::Import
               # puts "end_array[index].to_s - "+end_array[index].to_s
               sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
                 # image.width = 100
-                image.height = 90
+                # image.height = 90
                 image.start_at 2, pr_row.row_index
                 image.end_at 3, pr_row.row_index+1
-              end          
+                image.anchor.from.rowOff = 10_000
+                image.anchor.from.colOff = 10_000
+            end          
             end
           end
 
