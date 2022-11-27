@@ -291,7 +291,7 @@ class Services::Import
 
     current_process = "=====>>>> FINISH import excel_price - #{Time.now.to_s} - Закончили импорт каталога товаров для файла клиента"
   	# ProductMailer.notifier_process(current_process).deliver_now
-    FileUtils.rm_rf(Dir["#{Rails.public_path}/excel_price/*"])
+    # FileUtils.rm_rf(Dir["#{Rails.public_path}/excel_price/*"])
   end
 
   def self.collect_main_list_cat_info(categories_main_list)
@@ -323,12 +323,13 @@ class Services::Import
     RestClient.get( input_path ) { |response, request, result, &block|
       case response.code
       when 200
-
+        ##### this code for production because simple way (standart load file) not work and have problem with minimagick convert
         temp_filename = "temp_"+file_name+"."+input_path.split('.').last
         download = open(input_path)
         download_path = "#{Rails.public_path}/excel_price/"+temp_filename
         IO.copy_stream(download, download_path)
         new_image_link = Rails.env.development? ? "http://localhost:3000/excel_price/"+temp_filename : "http://157.245.114.19/excel_price/"+temp_filename
+        ######
 
         image_process = ImageProcessing::MiniMagick.source(new_image_link)
         result = file_name == "logo" ? new_image_link : image_process.resize_and_pad!(200, 200).path

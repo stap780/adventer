@@ -45,4 +45,10 @@ namespace :file do
     puts "finish copy_production_log_every_day"
   end
 
+  task clear_temp_excel_price_folder: :environment do
+    puts "start clear_temp_excel_price_folder"
+    FileUtils.rm_rf(Dir["#{Rails.public_path}/excel_price/*"])
+    puts "finish clear_temp_excel_price_folder"
+  end
+
 end
