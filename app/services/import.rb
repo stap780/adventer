@@ -268,11 +268,6 @@ class Services::Import
           merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
           merge_ranges.uniq.each { |range| sheet.merge_cells(range) }
           sheet.sheet_view.pane do |pane|
-            # pane.top_left_cell = 'A2'
-            # pane.state = :frozen_split
-            # pane.y_split = 1
-            # pane.x_split = 1
-            # pane.active_pane = :bottom_right
             pane.state = :frozen
             pane.x_split = 1
             pane.y_split = 2
