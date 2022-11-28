@@ -46,24 +46,24 @@ class OrdersController < ApplicationController
 
   # PATCH/PUT /orders/1
   def update
-  respond_to do |format|
-    if @order.update(order_params)
-      format.html { redirect_to edit_order_url(@order), notice: "Заказ обновлён" }
-      format.json { render :show, status: :ok, location: @order }
-    else
-      format.html { render :edit, status: :unprocessable_entity }
-      format.json { render json: @order.errors, status: :unprocessable_entity }
+    respond_to do |format|
+      if @order.update(order_params)
+        format.html { redirect_to edit_order_url(@order), notice: "Заказ обновлён" }
+        format.json { render :show, status: :ok, location: @order }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: @order.errors, status: :unprocessable_entity }
+      end
     end
-  end
   end
 
   # DELETE /orders/1
   def destroy
-  @order.destroy
-  respond_to do |format|
-    format.html { redirect_to orders_url, notice: "Заказ удалён" }
-    format.json { head :no_content }
-  end
+    @order.destroy
+    respond_to do |format|
+      format.html { redirect_to orders_url, notice: "Заказ удалён" }
+      format.json { head :no_content }
+    end
   end
 
 # POST /orders
