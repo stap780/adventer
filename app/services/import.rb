@@ -196,7 +196,7 @@ class Services::Import
               cat_products = Rails.env.development? ? offers.select{|item| item.css('categoryId').text == s_cat[:id]}.take(2) : offers.select{|item| item.css('categoryId').text == s_cat[:id]}
               cat_products.each_with_index do |pr, index|
                 title = pr.css('model').text.present? ? pr.css('model').text : ' '
-                sku = pr.css('sku').text.present? ? pr.css('sku').text : pr['id']
+                sku = pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id']
                 desc = pr.css('description').text.present? ? pr.css('description').text : ' '
                 price = Services::Import.price_shift(excel_price, pr.css('price').text)
                 pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
@@ -233,7 +233,7 @@ class Services::Import
             cat_products = Rails.env.development? ? offers.select{|item| item.css('categoryId').text == cat[:id]}.take(2) : offers.select{|item| item.css('categoryId').text == cat[:id]}
             cat_products.each_with_index do |pr, index|
               title = pr.css('model').text.present? ? pr.css('model').text : ' '
-              sku = pr.css('sku').text.present? ? pr.css('sku').text : pr['id']
+              sku = pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id']
               desc = pr.css('description').text.present? ? pr.css('description').text : ' '
               price = Services::Import.price_shift(excel_price, pr.css('price').text)
               pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
