@@ -293,7 +293,7 @@ class Services::Import
 
     current_process = "=====>>>> FINISH import excel_price - #{Time.now.to_s} - Закончили импорт каталога товаров для файла клиента"
   	# ProductMailer.notifier_process(current_process).deliver_now
-    # FileUtils.rm_rf(Dir["#{Rails.public_path}/excel_price/*"])
+    FileUtils.rm_rf(Dir["#{Rails.public_path}/excel_price/*"]) if Rails.env.development?
   end
 
   def self.collect_main_list_cat_info(categories_main_list)
