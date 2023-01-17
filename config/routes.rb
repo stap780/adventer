@@ -1,7 +1,5 @@
 Rails.application.routes.draw do
-  # authenticated :user, -> user { user.admin? }  do
-  #   mount DelayedJobWeb, at: "/job"
-  # end
+
   get '/excel_prices/:id/import', to: 'excel_prices#import', as: 'import_excel_price'
   get '/excel_prices/:id/file_export', to: 'excel_prices#file_export', as: 'file_export_excel_price'
   resources :excel_prices do
@@ -58,6 +56,9 @@ Rails.application.routes.draw do
     end
   end
 
-  match "/job" => DelayedJobWeb, :anchor => false, :via => [:get, :post]
+  # match "/job" => DelayedJobWeb, :anchor => false, :via => [:get, :post]
+  authenticated :user, -> user { user.admin? }  do
+    mount DelayedJobWeb, at: "/job"
+  end
 
 end

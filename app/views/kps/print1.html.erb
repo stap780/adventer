@@ -96,11 +96,11 @@
         </div>
         <div class="notice-date">Дата <%= @kp.created_at.strftime("%d / %m / %Y")%></div>
         <div class="notice-stamp">М П
-          <% if @kp.vid == 'Основное' && @kp.status == 'Согласовано бухгалтером' || @kp.status == 'Договор'%>
+          <%# if @kp.vid == 'Основное' && @kp.status == 'Согласовано бухгалтером' || @kp.status == 'Договор'%>
           <% image = @our_company.images.first %>
           <% link = image.present? ? "/tmp"+wicked_image_active_storage_workaround(image).to_s.split('/tmp').last : '' %>
           <%= render "pdf_image", image_link: link, image_class: 'pechat' if image.present? %>
-          <% end %>
+          <%# end %>
         </div>
       </div>
 
