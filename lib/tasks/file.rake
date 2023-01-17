@@ -37,7 +37,7 @@ namespace :file do
 
     	production_log_file = "#{Rails.root}/log/production.log"
       production_copy_log_file = "#{Rails.root}/log/production_#{Time.zone.now.strftime("%d_%m_%Y_%I_%M")}.log"
-    	FileUtils.cp(production_log_file, production_copy_log_file)
+    	#FileUtils.cp(production_log_file, production_copy_log_file)
       File.open(production_log_file , 'w+') do |f|
         f.write("Time - #{Time.zone.now}")
       end
