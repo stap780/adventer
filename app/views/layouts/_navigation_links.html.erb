@@ -20,6 +20,7 @@
   <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-bs-toggle="dropdown">Настройки</a>
   <div class="dropdown-menu">
     <a class="dropdown-item <%= 'active' if current_page?(users_path) %>" href="<%= users_path %>">Пользователи</a>
+    <a class="dropdown-item <%= 'active' if current_page?(delayed_job_web_path) %>" href="<%= delayed_job_web_path %>" target="_blank">Системные задания</a>
   </div>
 </li>
 <% end %>

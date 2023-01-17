@@ -1,22 +1,22 @@
-<div class="row justify-content-center align-items-center mb-4">
+<div class="row justify-content-center align-items-center mt-3 mb-3">
   <div class="col-2 row">
     <div class="col-md-12 p-0">
       <div class="h3">Прайсы Excel</div>
       <div class="h6">Всего - <%= ExcelPrice.count %></div>
     </div>
   </div>
-  <div class="col-10 pl-0 pr-0 mb-3 row">
-    <div class="col-12 mb-3">
+  <div class="col-10 pl-0 pr-0 row">
+    <div class="col-2">
       <div class="btn-group p-0" role="group" aria-label="Button group with nested dropdown">
         <div class="btn-group" role="group">
           <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle btn-sm" data-bs-toggle="dropdown">Действия</button>
           <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-            <%= link_to 'Создать прайс', new_excel_price_path, class: 'dropdown-item' %>
+            <%= link_to 'Создать', new_excel_price_path, class: 'dropdown-item' %>
           </div>
         </div>
       </div>
     </div>
-    <%= search_form_for @search, {class: 'form-inline col-12 pl-0 pr-0'} do |f| %>
+    <%= search_form_for @search, {class: 'form-inline col-10 pl-0 pr-0'} do |f| %>
     <div class="input-group input-group-sm">
             <%= f.search_field :title_cont , placeholder: 'title', class: "form-control", style: "max-width: 180px;" %>
             <%= f.search_field :link_cont , placeholder: 'link', class: "form-control", style: "max-width: 180px;" %>
@@ -39,9 +39,9 @@
   <thead>
     <tr class="text-secondary">
       <th><%= check_box_tag 'selectAll', 'selectAll'%></th>
-      <th>Title</th>
-      <th>Link</th>
-      <th>Comment</th>
+      <th>Название</th>
+      <th>Ссылка</th>
+      <th>Комментарий</th>
       <th colspan="4"></th>
     </tr>
   </thead>

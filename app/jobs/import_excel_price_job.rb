@@ -1,5 +1,5 @@
 class ImportExcelPriceJob < ApplicationJob
-  queue_as :default
+  queue_as :excel
 
   def perform(excel_price)
     # Do something later

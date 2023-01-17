@@ -6,12 +6,12 @@
   <div class="row">
     <div class="col-12 h3"><%= page_title %></div>
     <div class="col-6 row">
-    <%= f.input :title %>
-    <%= f.input :link %>
-    <%= f.input :price_move, collection: [['+','plus'], ['-','minus']], include_blank: false, input_html: { class: 'form-select' }, wrapper_html: { class: 'col-auto' } %>
-    <%= f.input :price_shift, type: "number", wrapper_html: { class: 'col-auto' } %>
-    <%= f.input :price_points,  collection: [['%','percents'], ['ед.','fixed']], include_blank: false, input_html: { class: 'form-select' }, wrapper_html: { class: 'col-auto' } %>
-    <%= f.input :comment %>    
+    <%= f.input :title, label: 'Название'%>
+    <%= f.input :link, label: 'Ссылка'%>
+    <%= f.input :price_move, label: 'Действие', collection: [['+','plus'], ['-','minus']], include_blank: false, input_html: { class: 'form-select' }, wrapper_html: { class: 'col-auto' } %>
+    <%= f.input :price_shift, label: 'Число', type: "number", wrapper_html: { class: 'col-auto' } %>
+    <%= f.input :price_points, label: 'Тип',  collection: [['%','percents'], ['ед.','fixed']], include_blank: false, input_html: { class: 'form-select' }, wrapper_html: { class: 'col-auto' } %>
+    <%= f.input :comment, label: 'Комментарий' %>    
     </div>
 </div>
   <div class="row">

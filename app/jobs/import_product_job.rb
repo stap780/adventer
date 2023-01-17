@@ -1,5 +1,5 @@
 class ImportProductJob < ApplicationJob
-  queue_as :default
+  queue_as :product
 
   def perform
     # Do something later

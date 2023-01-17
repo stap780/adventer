@@ -1,4 +1,4 @@
-<div class="row justify-content-center align-items-center mb-4">
+<div class="row justify-content-center align-items-center ье-3 mb-3">
   <div class="col-2 row">
     <div class="col-md-12 p-0">
       <div class="h3">Заказы</div>
@@ -6,7 +6,7 @@
     </div>
   </div>
   <div class="col-10 pl-0 pr-0 row">
-    <div class="col-12 mb-3">
+    <div class="col-2">
       <% if can? :download, Order %>
       <div class="btn-group p-0" role="group" aria-label="Button group with nested dropdown">
         <div class="btn-group" role="group">
@@ -21,7 +21,7 @@
       <% end %>
     </div>
 
-  <%= search_form_for @search, {class: 'form-inline col-12 pl-0 pr-0'} do |f| %>
+  <%= search_form_for @search, {class: 'form-inline col-10 pl-0 pr-0'} do |f| %>
     <div class="input-group input-group-sm">
       <%= f.select :status_in, Order::STATUS, { :prompt => 'Статус'}, class: "form-select", style: "max-width: 180px;" %>
       <%= f.search_field :number_eq , placeholder: 'Номер', class: "form-control", style: "max-width: 180px;" %>
