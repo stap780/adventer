@@ -12,8 +12,8 @@ class Kp < ApplicationRecord
   after_commit :notify_bookkeeper_to_add_stamp, if: :persisted?
   after_commit :notify_manager_kp_ready, if: :persisted?
 
-  VID = ["Начальное","Основное"]
-  STATUS = ["Новый", "В работе", "Ждёт печати","Согласовано бухгалтером", "Договор"]
+  VID = ["Начальное","В работе","Основное"]
+  STATUS = ["Новый","В работе","Финальный"]#["Новый","В работе","Ждёт печати","Согласовано бухгалтером","Договор"]
 
   def self.import(file, order, kp)
 		puts 'импорт файла '+Time.now.to_s
