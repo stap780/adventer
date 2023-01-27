@@ -56,7 +56,6 @@ Rails.application.routes.draw do
     end
   end
 
-  # match "/job" => DelayedJobWeb, :anchor => false, :via => [:get, :post]
   authenticated :user, -> user { user.admin? }  do
     mount DelayedJobWeb, at: "/job"
   end

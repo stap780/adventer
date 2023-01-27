@@ -1,13 +1,13 @@
 class Product < ApplicationRecord
-  before_save :normalize_data_white_space
-  validates :title, presence: true
-  # validates :sku, presence: true, uniqueness: true
-  validates :images, size: { less_than: 10.megabytes , message: 'размер файла должен быть меньше 10Мб' }
 
   has_many :kp_products, dependent: :destroy
   has_many :kps, :through => :kp_products
   has_many_attached :images, dependent: :destroy
   accepts_nested_attributes_for :images_attachments, allow_destroy: true
+  before_save :normalize_data_white_space
+  validates :title, presence: true
+  # validates :sku, presence: true, uniqueness: true
+  validates :images, size: { less_than: 10.megabytes , message: 'размер файла должен быть меньше 10Мб' }
   scope :search_by_title_sku, ->(q) { where("title ILIKE ? or sku ILIKE ?", "%#{q}%", "%#{q}%").order(:title) }
 
 

@@ -97,8 +97,16 @@ class Services::Import
 
     start_array_string = {0=>'B6',1=>'D6',2=>'F6',3=>'H6',4=>'B8',5=>'D8',6=>'F8',7=>'H8',8=>'B10',9=>'D10',10=>'F10',11=>'H10'}
     # end_array = {0=>'C7',1=>'E7',2=>'G7',3=>'I7',4=>'C9',5=>'E9',6=>'G9',7=>'I9',8=>'C11',9=>'E11',10=>'G11',11=>'I11'}
-    start_array = {0=>[1,5],1=>[3,5],2=>[5,5],3=>[7,5],4=>[1,7],5=>[3,7],6=>[5,7],7=>[7,7],8=>[1,9],9=>[3,9],10=>[5,9],11=>[7,9]}
-    end_array = {0=>[2,6],1=>[4,6],2=>[6,6],3=>[8,6],4=>[2,8],5=>[4,8],6=>[6,8],7=>[8,8],8=>[2,10],9=>[4,10],10=>[6,10],11=>[8,10]}
+    start_array = { 0=>[1,5],1=>[3,5],2=>[5,5],3=>[7,5],
+                    4=>[1,7],5=>[3,7],6=>[5,7],7=>[7,7],
+                    8=>[1,9],9=>[3,9],10=>[5,9],11=>[7,9],
+                    12=>[1,11],13=>[3,11],14=>[5,11],15=>[7,11],
+                    16=>[1,13],17=>[3,13],18=>[5,13],19=>[7,13]}
+    end_array = { 0=>[2,6],1=>[4,6],2=>[6,6],3=>[8,6],
+                  4=>[2,8],5=>[4,8],6=>[6,8],7=>[8,8],
+                  8=>[2,10],9=>[4,10],10=>[6,10],11=>[8,10],
+                  12=>[2,12],13=>[4,12],14=>[6,12],15=>[8,12],
+                  16=>[2,14],17=>[4,14],18=>[6,14],19=>[8,14]}
     notice_text_main_sheet = Axlsx::RichText.new
     notice_text_main_sheet.add_run('Подсказка: ', b: true, color: 'EA4488')
     notice_text_main_sheet.add_run('для того чтобы открыть нужную категорию нажмите на название или вкладку')
@@ -118,9 +126,15 @@ class Services::Import
         sheet.add_row ['','','','','','','','','','',''], height: 40, style: [bg_w,nil,bg_w,nil,bg_w,nil,bg_w,nil,bg_w,bg_w,bg_w]
       end
       sheet.add_row ['','','','','','','','','','',''], height: 80, style: bg_w
-      puts "finish create main sheet rows"
-      puts "start add collections to main sheet"
+      # puts "finish create main sheet rows"
+      # puts "start add collections to main sheet"
+      # puts "categories_for_list => "+categories_for_list.to_s
+      # puts "categories_for_list COUNT => "+categories_for_list.count.to_s
+      # sleep 0.5
       categories_for_list.each_with_index do |cat, index|
+        # puts "cat => "+cat.to_s
+        # puts "start_array => "+start_array.to_s
+        # puts "start_array[index] => "+start_array[index].to_s
           column_start = start_array[index][0]
           row_start = start_array[index][1]
           column_end = start_array[index][0]
@@ -136,11 +150,11 @@ class Services::Import
           sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
             image.width = 200
             image.height = 200
-            image.start_at start_array_string[index]
+            image.start_at start_array[index]
             # image.start_at start_array[index][0], start_array[index][1]
             # image.end_at start_array[index][0], start_array[index][1]
           end
-          sheet.add_hyperlink( location: "'#{cat[:title].at(0..30)}'!A1", target: :sheet, ref: sheet.rows[row_end+1].cells[column_end] )
+          sheet.add_hyperlink( location: "'#{cat[:title].at(0..30).gsub('/',',')}'!A1", target: :sheet, ref: sheet.rows[row_end+1].cells[column_end] )
       end
 
       sheet.column_widths 2,25,2,25,2,25,2,25,10,50,10
@@ -184,7 +198,7 @@ class Services::Import
       notice_text = Axlsx::RichText.new
       notice_text.add_run('Подсказка: ', :b => true)
       notice_text.add_run('для того чтобы открыть позицию на сайте нажмите на наименование/фото товара')
-        wb.add_worksheet(name: cat[:title].at(0..30)) do |sheet|
+        wb.add_worksheet(name: cat[:title].at(0..30).gsub('/',',')) do |sheet|
           sheet.add_row ['','<= НА ГЛАВНУЮ','', cat[:title]], style: [nil,back_button,back_button,ind_header], height: 30
           sheet.add_row ['',notice_text,'','','','',''], style: [nil,notice_b,notice_label,notice_b,notice_b,notice_b,notice_b,notice_b], height: 20
           second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
