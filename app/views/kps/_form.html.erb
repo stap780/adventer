@@ -10,9 +10,9 @@
     </div>
     <div class="col-12 row">
     <% if current_user.admin? %>
-    <%= f.input :vid, collection: Kp::VID, label: 'Тип КП', prompt: "Тип", input_html: { class: "form-select" } , wrapper_html: { class: "col-2" } %>
+      <%= f.input :vid, collection: Kp::VID, label: 'Тип КП', prompt: "Тип", input_html: { class: "form-select" } , wrapper_html: { class: "col-2" } %>
     <% else %>
-    <%= f.input :vid, disabled: true, collection: Kp::VID, label: 'Тип КП', prompt: "Тип", input_html: { class: "form-select" } , wrapper_html: { class: "col-2" } %>
+      <%= f.input :vid, disabled: true, collection: Kp::VID, label: 'Тип КП', prompt: "Тип", input_html: { class: "form-select" } , wrapper_html: { class: "col-2" } %>
     <% end %>
     <%= f.input :status, collection: Kp::STATUS, prompt: "Статус", label: 'Статус', input_html: { class: "form-select" } , wrapper_html: { class: "col-2" } %>
     <%= f.input :extra, wrapper_html: { class: "col-2" }, input_html: {min: "0", step: "0.01"} %>
@@ -31,7 +31,6 @@
       <thead>
         <tr class="text-secondary">
           <th>Изоб.</th>
-
           <th><%= t 'item_title' %></th>
           <th>Артикул</th>
           <th>Описание</th>
