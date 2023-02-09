@@ -61,14 +61,21 @@ class Services::Import
 		download_path = "#{Rails.public_path}"+"/"+filename
 		IO.copy_stream(download, download_path)
     data = Nokogiri::XML(open(download_path))
-    offers = data.xpath("//offer")
+
+    puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
+    all_offers = Nokogiri::XML(File.open("#{Rails.public_path}/1888348.xml")).xpath("//offer")
+    # puts "all_offers count => "+all_offers.count.to_s
+    puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
+    # offers = data.xpath("//offer")
 
     categories = data.xpath("//category").map{|c| {id: c["id"], title: c.text, parent_id: c["parentId"]}}
     # puts categories.to_s
     all_categories = Services::Import.collect_main_list_cat_info(categories)
-    select_main_cat = all_categories.select{|c| c[:parent_id] == nil}
-    # puts select_main_cat.to_s
-    categories_for_list = all_categories.select{|c| c[:parent_id] == select_main_cat[0][:id]}
+    # puts "all_categories => "+all_categories.map{|c| c[:parent_id]}.to_s
+    # puts "all_categories.nil? => "+all_categories.map{|c| c[:parent_id]}.all?(&:nil?).to_s
+    select_main_cat = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? nil : all_categories.select{|c| c[:parent_id] == nil}
+    # puts "select_main_cat => "+select_main_cat.to_s
+    categories_for_list = select_main_cat.present? ? all_categories.select{|c| c[:parent_id] == select_main_cat[0][:id]} : all_categories
 
     p = Axlsx::Package.new
     wb = p.workbook
@@ -122,7 +129,7 @@ class Services::Import
       sheet.add_row ['','Каталог продукции','','','','','','','','Реквизиты',''], height: 50, style: [bg_w,header,bg_w,bg_w,bg_w,bg_w,bg_w,bg_w,bg_w,header,bg_w]
       sheet.add_row ['',notice_text_main_sheet,'','','','','','','','',''], height: 20, style: notice_main_label
 
-      count_rows = (categories_for_list.count/4).ceil
+      count_rows = categories_for_list.count < 4 ? categories_for_list.count : (categories_for_list.count/4).ceil
       puts "count_rows - "+count_rows.to_s
       puts "start create main sheet rows"
       Array(0..count_rows).each do |arr|
@@ -211,36 +218,37 @@ class Services::Import
               cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
               row_index_for_titles_array.push(cat_title_row.row_index+1)
               sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
-              cat_products = Rails.env.development? ? offers.select{|item| item.css('categoryId').text == s_cat[:id]}.take(2) : offers.select{|item| item.css('categoryId').text == s_cat[:id]}
-              cat_products.each_with_index do |pr, index|
-                title = pr.css('model').text.present? ? pr.css('model').text : ' '
-                sku = pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id']
-                desc = pr.css('description').text.present? ? pr.css('description').text : ' '
-                price = Services::Import.price_shift(excel_price, pr.css('price').text)
-                pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
-                #puts pr_data.to_s if pr['id'] == '139020547'
-                pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 150
-                # puts "pr_row.row_index - "+pr_row.row_index.to_s
-                hyp_ref = "D#{(pr_row.row_index+1).to_s}"
-                # puts hyp_ref.to_s
-                sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
+              cat_products =  Rails.env.development? ? 
+                              Services::Import.collect_product_ids(s_cat[:id]).take(30) :
+                              Services::Import.collect_product_ids(s_cat[:id])
+                              # offers.select{|item| item.css('categoryId').text == s_cat[:id]}.take(2) : 
+                              # offers.select{|item| item.css('categoryId').text == s_cat[:id]}
 
-                picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
-                file_name = pr['id']
-                image = Services::Import.load_convert_image(picture_link, file_name)
-                # image_width = MiniMagick::Image.open(image)[:width].to_i
-                # image_height = MiniMagick::Image.open(image)[:height].to_i
-                # puts "image -"+image
-                # puts "start_array[index].to_s - "+start_array[index].to_s
-                # puts "end_array[index].to_s - "+end_array[index].to_s
-                sheet.add_image(image_src: image, :noSelect => true, :noMove => true, hyperlink: pr.css('url').text) do |image|
-                  # image.width = image_width-5
-                  # image.height = image_height-5
-                  image.start_at 2, pr_row.row_index
-                  image.end_at 3, pr_row.row_index+1
-                  image.anchor.from.rowOff = 10_000
-                  image.anchor.from.colOff = 10_000
-                end            
+              cat_products.each_with_index do |pr_id, index|
+                pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
+                if pr.present?
+                  title = pr.css('model').text.present? ? pr.css('model').text : ' '
+                  sku = pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id']
+                  desc = pr.css('description').text.present? ? pr.css('description').text : ' '
+                  price = Services::Import.price_shift(excel_price, pr.css('price').text)
+                  pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
+                  #puts pr_data.to_s if pr['id'] == '139020547'
+                  pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 150
+                  # puts "pr_row.row_index - "+pr_row.row_index.to_s
+                  hyp_ref = "D#{(pr_row.row_index+1).to_s}"
+                  # puts hyp_ref.to_s
+                  sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
+
+                  picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
+                  file_name = pr['id']
+                  image = Services::Import.load_convert_image(picture_link, file_name)
+                  sheet.add_image(image_src: image, :noSelect => true, :noMove => true, hyperlink: pr.css('url').text) do |image|
+                    image.start_at 2, pr_row.row_index
+                    image.end_at 3, pr_row.row_index+1
+                    image.anchor.from.rowOff = 10_000
+                    image.anchor.from.colOff = 10_000
+                  end
+                end           
               end
             end
           end
@@ -248,33 +256,38 @@ class Services::Import
             cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
             row_index_for_titles_array.push(cat_title_row.row_index+1)
             sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
-            cat_products = Rails.env.development? ? offers.select{|item| item.css('categoryId').text == cat[:id]}.take(2) : offers.select{|item| item.css('categoryId').text == cat[:id]}
-            cat_products.each_with_index do |pr, index|
-              title = pr.css('model').text.present? ? pr.css('model').text : ' '
-              sku = pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id']
-              desc = pr.css('description').text.present? ? pr.css('description').text : ' '
-              price = Services::Import.price_shift(excel_price, pr.css('price').text)
-              pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
-              #puts pr_data.to_s if pr['id'] == '139020547'
-              pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 110
-              # puts "pr_row.row_index - "+pr_row.row_index.to_s
-              hyp_ref = "D#{(pr_row.row_index+1).to_s}"
-              sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
-              
-              picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
-              file_name = pr['id']
-              image = Services::Import.load_convert_image(picture_link, file_name)
-            # puts "image -"+image
-              # puts "start_array[index].to_s - "+start_array[index].to_s
-              # puts "end_array[index].to_s - "+end_array[index].to_s
-              sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
-                # image.width = 100
-                # image.height = 90
-                image.start_at 2, pr_row.row_index
-                image.end_at 3, pr_row.row_index+1
-                image.anchor.from.rowOff = 10_000
-                image.anchor.from.colOff = 10_000
-            end          
+            cat_products =  Rails.env.development? ? 
+                              Services::Import.collect_product_ids(cat[:id]).take(30) :
+                              Services::Import.collect_product_ids(cat[:id])
+                            # offers.select{|item| item.css('categoryId').text == cat[:id]}.take(2) : 
+                            # offers.select{|item| item.css('categoryId').text == cat[:id]}
+            puts "cat_products => "+cat_products.to_s
+            cat_products.each_with_index do |pr_id, index|
+              # puts "pr_id => "+pr_id.to_s
+              pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
+              # puts "pr => "+pr.to_s
+              if pr.present?
+                title = pr.css('model').text.present? ? pr.css('model').text : ' '
+                sku = pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id']
+                desc = pr.css('description').text.present? ? pr.css('description').text : ' '
+                price = Services::Import.price_shift(excel_price, pr.css('price').text)
+                pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
+                #puts pr_data.to_s if pr['id'] == '139020547'
+                pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 110
+                # puts "pr_row.row_index - "+pr_row.row_index.to_s
+                hyp_ref = "D#{(pr_row.row_index+1).to_s}"
+                sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
+                
+                picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
+                file_name = pr['id']
+                image = Services::Import.load_convert_image(picture_link, file_name)
+                sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
+                  image.start_at 2, pr_row.row_index
+                  image.end_at 3, pr_row.row_index+1
+                  image.anchor.from.rowOff = 10_000
+                  image.anchor.from.colOff = 10_000
+                end
+              end          
             end
           end
 
@@ -392,100 +405,29 @@ class Services::Import
     new_price
   end
 
-  # def self.resize_with_nocrop(image, w, h)
+  def self.collect_product_ids(cat_id)
+    pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
+  end
 
-  #   w_original = image[:width].to_f
-  #   h_original = image[:height].to_f
+  def self.load_all_catalog_xml
+    input_path = "https://adventer.su/marketplace/1888348.xml"
+    # puts "input_path - "+input_path.to_s
+    # puts "file_name - "+file_name.to_s
+    download_path = "#{Rails.public_path}/1888348.xml"
+    File.delete(download_path) if File.file?(download_path).present?
 
-  #   if (w_original*h != h_original * w)
-  #     if w_original*h >= h_original * w
-  #       # long width
-  #       w_result = w
-  #       h_result = w_result * (h_original / w_original)
-  #     elsif w_original*h <= h_original * w
-  #       # long height
-  #       h_result = h
-  #       w_result = h_result * (w_original / h_original)
-  #     end
-  #   else
-  #      # good proportions
-  #      h_result = h
-  #      w_result = w
-  #   end
+    RestClient.get( input_path ) { |response, request, result, &block|
+      case response.code
+      when 200
+        f = File.new(download_path, "wb")
+        f << response.body
+        f.close
+        puts "load_all_catalog_xml load and write"
+      else
+        response.return!(&block)
+      end
+      }
+  end
 
-  #   #
-  #   image.resize("#{w_result}x#{h_result}")
-  #   return image
-  # end
-
-  # def resize_nocrop_noscale(image, w,h)
-  #   w_original = image[:width].to_f
-  #   h_original = image[:height].to_f
-
-  #   if w_original < w && h_original < h
-  #     return image
-  #   end
-
-  #   # resize
-  #   image.resize("#{w}x#{h}")
-
-  #   return image
-  # end
-
-  # def resize_with_crop(img, w, h, options = {})
-  #   gravity = options[:gravity] || :center
-
-  #   w_original, h_original = [img[:width].to_f, img[:height].to_f]
-
-  #   op_resize = ''
-
-  #   # check proportions
-  #   if w_original * h < h_original * w
-  #     op_resize = "#{w.to_i}x"
-  #     w_result = w
-  #     h_result = (h_original * w / w_original)
-  #   else
-  #     op_resize = "x#{h.to_i}"
-  #     w_result = (w_original * h / h_original)
-  #     h_result = h
-  #   end
-
-  #   w_offset, h_offset = crop_offsets_by_gravity(gravity, [w_result, h_result], [ w, h])
-
-  #   img.combine_options do |i|
-  #     i.resize(op_resize)
-  #     i.gravity(gravity)
-  #     i.crop "#{w.to_i}x#{h.to_i}+#{w_offset}+#{h_offset}!"
-  #   end
-
-  #   img
-  # end
-
-  # # from http://www.dweebd.com/ruby/resizing-and-cropping-images-to-fixed-dimensions/
-
-  # GRAVITY_TYPES = [ :north_west, :north, :north_east, :east, :south_east, :south, :south_west, :west, :center ]
-
-  # def crop_offsets_by_gravity(gravity, original_dimensions, cropped_dimensions)
-  #   raise(ArgumentError, "Gravity must be one of #{GRAVITY_TYPES.inspect}") unless GRAVITY_TYPES.include?(gravity.to_sym)
-  #   raise(ArgumentError, "Original dimensions must be supplied as a [ width, height ] array") unless original_dimensions.kind_of?(Enumerable) && original_dimensions.size == 2
-  #   raise(ArgumentError, "Cropped dimensions must be supplied as a [ width, height ] array") unless cropped_dimensions.kind_of?(Enumerable) && cropped_dimensions.size == 2
-
-  #   original_width, original_height = original_dimensions
-  #   cropped_width, cropped_height = cropped_dimensions
-
-  #   vertical_offset = case gravity
-  #     when :north_west, :north, :north_east then 0
-  #     when :center, :east, :west then [ ((original_height - cropped_height) / 2.0).to_i, 0 ].max
-  #     when :south_west, :south, :south_east then (original_height - cropped_height).to_i
-  #   end
-
-  #   horizontal_offset = case gravity
-  #     when :north_west, :west, :south_west then 0
-  #     when :center, :north, :south then [ ((original_width - cropped_width) / 2.0).to_i, 0 ].max
-  #     when :north_east, :east, :south_east then (original_width - cropped_width).to_i
-  #   end
-
-  #   return [ horizontal_offset, vertical_offset ]
-  # end
 
 end
