@@ -63,7 +63,7 @@ class Services::Import
     data = Nokogiri::XML(open(download_path))
 
     puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
-    all_offers = Nokogiri::XML(File.open("#{Rails.public_path}/1888348.xml")).xpath("//offer")
+    all_offers = Nokogiri::XML(File.open("#{Rails.public_path}/1923917.xml")).xpath("//offer")
     # puts "all_offers count => "+all_offers.count.to_s
     puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
     # offers = data.xpath("//offer")
@@ -410,10 +410,10 @@ class Services::Import
   end
 
   def self.load_all_catalog_xml
-    input_path = "https://adventer.su/marketplace/1888348.xml"
+    input_path = "https://adventer.su/marketplace/1923917.xml"
     # puts "input_path - "+input_path.to_s
     # puts "file_name - "+file_name.to_s
-    download_path = "#{Rails.public_path}/1888348.xml"
+    download_path = "#{Rails.public_path}/1923917.xml"
     File.delete(download_path) if File.file?(download_path).present?
 
     RestClient.get( input_path ) { |response, request, result, &block|

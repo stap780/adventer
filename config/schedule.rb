@@ -36,3 +36,6 @@ every 1.day, :at => '23:45' do #
   rake "file:create_production_log_zip_every_day"
 end
 
+every 1.day, :at => '05:00' do #
+  rake "Services::Import.load_all_catalog_xml"
+end
