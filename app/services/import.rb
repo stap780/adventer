@@ -6,7 +6,7 @@ class Services::Import
     url = "https://adventer.su/marketplace/96164.xls"
 		filename = url.split('/').last
     download = open(url)
-		download_path = "#{Rails.root}/shared/public/"+filename
+		download_path = "/var/www/adventer/shared/public/"+filename
 		IO.copy_stream(download, download_path)
     spreadsheet = Roo::Excel.new(download_path)
     header = spreadsheet.row(1)
@@ -80,15 +80,15 @@ class Services::Import
     puts "=====>>>> СТАРТ import excel_price #{Time.now.to_s}"
     
     puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
-    all_offers = Nokogiri::XML(File.open("#{Rails.root}/shared/public/1923917.xml")).xpath("//offer")
+    all_offers = Nokogiri::XML(File.open("/var/www/adventer/shared/public/1923917.xml")).xpath("//offer")
     puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"    
     
     excel_price.update!(file_status: false)
-    File.delete("#{Rails.root}/shared/public/#{excel_price.id.to_s}_file.xlsx") if File.file?("#{Rails.root}/shared/public/#{excel_price.id.to_s}_file.xlsx").present?
+    File.delete("/var/www/adventer/shared/public/#{excel_price.id.to_s}_file.xlsx") if File.file?("/var/www/adventer/shared/public/#{excel_price.id.to_s}_file.xlsx").present?
     url = excel_price.link
 		filename = url.split('/').last
     download = open(url)
-		download_path = "#{Rails.root}/shared/public/"+filename
+		download_path = "/var/www/adventer/shared/public/"+filename
 		IO.copy_stream(download, download_path)
     data = Nokogiri::XML(open(download_path))
 
@@ -305,7 +305,7 @@ class Services::Import
     puts "finish create seconds collections sheet"
 
     stream = p.to_stream
-    file_path = "#{Rails.root}/shared/public/#{excel_price.id.to_s}_file.xlsx"
+    file_path = "/var/www/adventer/shared/public/#{excel_price.id.to_s}_file.xlsx"
     File.open(file_path, 'wb') { |f| f.write(stream.read) }
 
     excel_price.update!(file_status: true) if File.file?(file_path).present?
@@ -315,7 +315,7 @@ class Services::Import
 
     current_process = "=====>>>> FINISH import excel_price - #{Time.now.to_s} - Закончили импорт каталога товаров для файла клиента"
   	# ProductMailer.notifier_process(current_process).deliver_now
-    FileUtils.rm_rf(Dir["#{Rails.root}/shared/public/excel_price/*"])
+    FileUtils.rm_rf(Dir["/var/www/adventer/shared/public/excel_price/*"])
   end
 
   def self.collect_main_list_cat_info(categories_main_list)
@@ -348,7 +348,7 @@ class Services::Import
         ##### this code for production because simple way (standart load file) not work and have problem with minimagick convert
         temp_filename = "temp_"+file_name+"."+input_path.split('.').last
         # download = open(input_path)
-        download_path = "#{Rails.root}/shared/public/excel_price/"+temp_filename
+        download_path = "/var/www/adventer/shared/public/excel_price/"+temp_filename
         # IO.copy_stream(download, download_path)
         f = File.new(download_path, "wb")
         f << response.body
@@ -374,8 +374,8 @@ class Services::Import
     result = file_name == "logo" ? link : image_process.resize_and_pad!(200, 200).path
     image_magic = MiniMagick::Image.open(result)
     convert_image = image_magic.format("jpeg")
-    convert_image.write("#{Rails.root}/shared/public/excel_price/#{file_name}.jpeg")
-    image = File.expand_path("#{Rails.root}/shared/public/excel_price/#{file_name}.jpeg")
+    convert_image.write("/var/www/adventer/shared/public/excel_price/#{file_name}.jpeg")
+    image = File.expand_path("/var/www/adventer/shared/public/excel_price/#{file_name}.jpeg")
   end
 
   def self.price_shift(excel_price, price)
@@ -402,7 +402,7 @@ class Services::Import
     input_path = "https://adventer.su/marketplace/1923917.xml"
     # puts "input_path - "+input_path.to_s
     # puts "file_name - "+file_name.to_s
-    download_path = "#{Rails.root}/shared/public/1923917.xml"
+    download_path = "/var/www/adventer/shared/public/1923917.xml"
     File.delete(download_path) if File.file?(download_path).present?
 
     RestClient.get( input_path ) { |response, request, result, &block|
