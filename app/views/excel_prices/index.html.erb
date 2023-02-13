@@ -53,8 +53,7 @@
         <td><%= excel_price.title %></td>
         <td><%= excel_price.link %></td>
         <td><%= excel_price.comment %></td>
-        <td><%= link_to "Создать", import_excel_price_path(excel_price), id: "import_#{excel_price.id}", class: "btn btn-light btn-sm", role: "button" %>
-</td>
+        <td><%= link_to "Создать", import_excel_price_path(excel_price), id: "import_#{excel_price.id}", class: "btn btn-light btn-sm", role: "button" %></td>
         <td>
         <% file = "#{Rails.public_path}/#{excel_price.id.to_s}_file.xlsx" %>
         <% if excel_price.file_status == true && File.file?(file) %>
@@ -63,7 +62,7 @@
         <% else %>
           <%= link_to '<span class="oi oi-cloud-download"></span>'.html_safe, file_export_excel_price_path(excel_price), id: "file_export_#{excel_price.id}", class: "btn btn-light btn-sm disabled", title: "file export" %>
         <% end %>
-        <%# link_to 'Создать файл', import_excel_price_path(excel_price), :remote => true, :method => :get , class: "btn btn-outline-info btn-sm", id: "button_#{excel_price.id}"%></td>
+        </td>
         <td><%= link_to '<span class="oi oi-pencil"></span>'.html_safe, edit_excel_price_path(excel_price) %></td>
         <td><%= link_to '<span class="oi oi-trash"></span>'.html_safe, excel_price, method: :delete, data: { confirm: 'Are you sure?' } %></td>
       </tr>
