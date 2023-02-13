@@ -1,0 +1,117 @@
+/* pdf style*/
+/* line 22, app/assets/stylesheets/print3.scss */
+div.alwaysbreak {
+  page-break-before: always;
+}
+
+/* line 23, app/assets/stylesheets/print3.scss */
+div.nobreak:before {
+  clear: both;
+}
+
+/* line 24, app/assets/stylesheets/print3.scss */
+div.nobreak {
+  page-break-inside: avoid;
+}
+
+/* end pdf style*/
+/* line 26, app/assets/stylesheets/print3.scss */
+body {
+  font-size: 14px;
+  color: #000;
+  background-color: #fff;
+  font-family: "Times New Roman", Times, serif;
+  margin: 30px;
+  font-style: italic;
+}
+
+/* line 35, app/assets/stylesheets/print3.scss */
+.wrapper {
+  width: 750px;
+  page-break-after: always;
+  margin: 0 auto;
+}
+
+/* line 41, app/assets/stylesheets/print3.scss */
+.wrapper:last-child {
+  page-break-after: auto;
+}
+
+/* line 45, app/assets/stylesheets/print3.scss */
+.logo {
+  float: right;
+}
+
+/* line 49, app/assets/stylesheets/print3.scss */
+h1 {
+  font-weight: bold;
+  font-size: 16px;
+  margin: 30px 0 20px;
+}
+
+/* line 54, app/assets/stylesheets/print3.scss */
+.kp-title h1 {
+  width: 100%;
+  text-align: center;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* line 61, app/assets/stylesheets/print3.scss */
+.generalInfo {
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  font-style: italic;
+  font-size: 16px;
+}
+
+/* line 70, app/assets/stylesheets/print3.scss */
+.itemsInfo {
+  border-collapse: collapse;
+  width: 100%;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* line 77, app/assets/stylesheets/print3.scss */
+.itemsInfo th {
+  text-align: center;
+  font-weight: bold;
+}
+
+/* line 82, app/assets/stylesheets/print3.scss */
+.itemsInfo td,
+.itemsInfo th {
+  border: solid 1px #000;
+  padding: 3px;
+}
+
+/* line 88, app/assets/stylesheets/print3.scss */
+.center {
+  text-align: center;
+}
+
+/* line 92, app/assets/stylesheets/print3.scss */
+.signs {
+  margin-top: 50px;
+}
+
+/* line 96, app/assets/stylesheets/print3.scss */
+.signs td {
+  width: 350px;
+  vertical-align: top;
+  line-height: 200%;
+}
+
+/* line 102, app/assets/stylesheets/print3.scss */
+.summary {
+  width: 100%;
+  text-align: right;
+  font-weight: bold;
+  margin-top: 10px;
+  font-style: italic;
+  font-size: 14px;
+}

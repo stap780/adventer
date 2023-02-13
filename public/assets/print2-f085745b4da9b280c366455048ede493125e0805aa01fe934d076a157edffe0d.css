@@ -1,0 +1,114 @@
+/* pdf style*/
+/* line 3, app/assets/stylesheets/print2.scss */
+div.alwaysbreak {
+  page-break-before: always;
+}
+
+/* line 4, app/assets/stylesheets/print2.scss */
+div.nobreak:before {
+  clear: both;
+}
+
+/* line 5, app/assets/stylesheets/print2.scss */
+div.nobreak {
+  page-break-inside: avoid;
+}
+
+/* end pdf style*/
+/* line 7, app/assets/stylesheets/print2.scss */
+body {
+  font-size: 12px;
+  color: #000;
+  background-color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 30px;
+}
+
+/* line 15, app/assets/stylesheets/print2.scss */
+.wrapper {
+  width: 700px;
+  page-break-after: always;
+  margin: 0 auto;
+}
+
+/* line 21, app/assets/stylesheets/print2.scss */
+.wrapper:last-child {
+  page-break-after: auto;
+}
+
+/* line 25, app/assets/stylesheets/print2.scss */
+.logo {
+  float: right;
+}
+
+/* line 29, app/assets/stylesheets/print2.scss */
+h1 {
+  font-weight: bold;
+  font-size: 16px;
+  margin: 30px 0 20px;
+}
+
+/* line 34, app/assets/stylesheets/print2.scss */
+.kp-title h1 {
+  width: 70%;
+  text-align: right;
+  float: left;
+}
+
+/* line 39, app/assets/stylesheets/print2.scss */
+.kp-title-date {
+  width: 30%;
+  float: left;
+  text-align: right;
+  margin: 30px 0 20px;
+}
+
+/* line 45, app/assets/stylesheets/print2.scss */
+.generalInfo th {
+  text-align: left;
+  padding-right: 30px;
+}
+
+/* line 50, app/assets/stylesheets/print2.scss */
+.itemsInfo {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* line 55, app/assets/stylesheets/print2.scss */
+.itemsInfo th {
+  text-align: center;
+  font-weight: bold;
+}
+
+/* line 60, app/assets/stylesheets/print2.scss */
+.itemsInfo td,
+.itemsInfo th {
+  border: solid 1px #000;
+  padding: 3px;
+}
+
+/* line 66, app/assets/stylesheets/print2.scss */
+.center {
+  text-align: center;
+}
+
+/* line 70, app/assets/stylesheets/print2.scss */
+.signs {
+  margin-top: 50px;
+}
+
+/* line 74, app/assets/stylesheets/print2.scss */
+.signs td {
+  width: 350px;
+  vertical-align: top;
+  line-height: 200%;
+}
+
+/* line 80, app/assets/stylesheets/print2.scss */
+.summary {
+  width: 100%;
+  text-align: right;
+  font-weight: bold;
+  margin-top: 10px;
+}

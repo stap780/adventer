@@ -1,0 +1,543 @@
+@font-face {
+  font-family: 'CenturyGothic';
+  src: url("http://157.245.114.19/Century_Gothic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'CenturyGothicRegular';
+  src: url("http://157.245.114.19/CenturyGothic.eot");
+  src: url("http://157.245.114.19/CenturyGothic.eot?#iefix") format("embedded-opentype"), url("http://157.245.114.19/CenturyGothic.woff") format("woff"), url("http://157.245.114.19/CenturyGothic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* line 14, app/assets/stylesheets/print1.scss */
+body {
+  font-family: CenturyGothicRegular;
+}
+
+/* line 17, app/assets/stylesheets/print1.scss */
+.debug {
+  border: 1px solid;
+}
+
+/* line 20, app/assets/stylesheets/print1.scss */
+.clearfix:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* line 25, app/assets/stylesheets/print1.scss */
+div.alwaysbreak {
+  page-break-before: always;
+}
+
+/* line 26, app/assets/stylesheets/print1.scss */
+div.nobreak:before {
+  clear: both;
+}
+
+/* line 27, app/assets/stylesheets/print1.scss */
+div.nobreak {
+  page-break-inside: avoid;
+}
+
+/* line 28, app/assets/stylesheets/print1.scss */
+a {
+  color: #0087C3;
+  text-decoration: none;
+}
+
+/* line 33, app/assets/stylesheets/print1.scss */
+.headerContent {
+  padding: 20px;
+  background-color: #f6f6f6;
+}
+
+/* line 37, app/assets/stylesheets/print1.scss */
+#header-left-part {
+  float: left;
+  margin-top: 8px;
+  width: 100%;
+  max-width: 55%;
+  background-color: #f6f6f6;
+}
+
+/* line 45, app/assets/stylesheets/print1.scss */
+#header-left-part .logo-image img {
+  height: 70px;
+}
+
+/* line 49, app/assets/stylesheets/print1.scss */
+#header-right-part {
+  float: left;
+  text-align: left;
+  width: 100%;
+  max-width: 45%;
+  font-size: 14px;
+  background-color: #f6f6f6;
+  font-weight: 100;
+}
+
+/* line 58, app/assets/stylesheets/print1.scss */
+#details {
+  margin-bottom: 50px;
+  background-color: #f6f6f6;
+}
+
+/* line 62, app/assets/stylesheets/print1.scss */
+#client {
+  padding-left: 6px;
+  border-left: 6px solid #0087C3;
+  float: left;
+  background-color: #f6f6f6;
+}
+
+/* line 68, app/assets/stylesheets/print1.scss */
+#client .to {
+  color: #777777;
+}
+
+/* line 72, app/assets/stylesheets/print1.scss */
+.name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* line 78, app/assets/stylesheets/print1.scss */
+#header-right-part div {
+  line-height: 20px;
+}
+
+/* line 81, app/assets/stylesheets/print1.scss */
+main {
+  margin-top: 45mm;
+  padding: 0 10px;
+}
+
+/* line 86, app/assets/stylesheets/print1.scss */
+#invoice {
+  float: right;
+  text-align: right;
+}
+
+/* line 91, app/assets/stylesheets/print1.scss */
+#invoice h1 {
+  color: #0087C3;
+  font-size: 2.4em;
+  line-height: 1em;
+  font-weight: normal;
+  margin: 0  0 10px 0;
+}
+
+/* line 99, app/assets/stylesheets/print1.scss */
+#invoice .date {
+  font-size: 1.1em;
+  color: #777777;
+}
+
+/* line 104, app/assets/stylesheets/print1.scss */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-bottom: 18px;
+  border: 1px solid #80808059;
+}
+
+/* line 112, app/assets/stylesheets/print1.scss */
+#thanks {
+  font-size: 14px;
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+/* line 118, app/assets/stylesheets/print1.scss */
+#notices {
+  margin-top: 20px;
+}
+
+/* line 122, app/assets/stylesheets/print1.scss */
+#notices .notice {
+  text-align: center;
+  width: 75%;
+  float: left;
+  position: relative;
+}
+
+/* line 128, app/assets/stylesheets/print1.scss */
+#notices .notice .text {
+  float: left;
+  width: 180px;
+}
+
+/* line 132, app/assets/stylesheets/print1.scss */
+.podpis {
+  position: absolute;
+  width: 200px;
+  top: -150% !important;
+  left: 20% !important;
+}
+
+/* line 138, app/assets/stylesheets/print1.scss */
+.podpis img {
+  max-width: 100%;
+}
+
+/* line 141, app/assets/stylesheets/print1.scss */
+.notice-date {
+  width: 25%;
+  float: left;
+}
+
+/* line 145, app/assets/stylesheets/print1.scss */
+#notices .notice .fio {
+  padding-left: 300px;
+}
+
+/* line 148, app/assets/stylesheets/print1.scss */
+.notice-stamp {
+  margin-left: 25%;
+  padding-top: 40px;
+  font-size: 12px;
+  position: relative;
+}
+
+/* line 154, app/assets/stylesheets/print1.scss */
+footer {
+  color: #777777;
+  width: 100%;
+  height: 30px;
+  position: absolute;
+  bottom: 0;
+  border-top: 1px solid #AAAAAA;
+  padding: 8px 0;
+  text-align: center;
+}
+
+/* line 164, app/assets/stylesheets/print1.scss */
+.relative {
+  position: relative;
+  display: block;
+}
+
+/* line 168, app/assets/stylesheets/print1.scss */
+.center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* line 175, app/assets/stylesheets/print1.scss */
+.inline {
+  display: inline-block;
+}
+
+/* line 176, app/assets/stylesheets/print1.scss */
+.h-20 {
+  height: 20px;
+}
+
+/* line 177, app/assets/stylesheets/print1.scss */
+.h-25 {
+  height: 25px;
+}
+
+/* line 178, app/assets/stylesheets/print1.scss */
+.ml-5 {
+  margin-left: 5px;
+}
+
+/* line 179, app/assets/stylesheets/print1.scss */
+.mr-5 {
+  margin-right: 5px;
+}
+
+/* line 180, app/assets/stylesheets/print1.scss */
+.w25 {
+  width: 25px;
+}
+
+/* line 181, app/assets/stylesheets/print1.scss */
+.w27 {
+  width: 27px;
+}
+
+/* line 182, app/assets/stylesheets/print1.scss */
+.w30 {
+  width: 30px;
+}
+
+/* line 183, app/assets/stylesheets/print1.scss */
+.w35 {
+  width: 35px;
+}
+
+/* line 184, app/assets/stylesheets/print1.scss */
+.w40 {
+  width: 40px;
+}
+
+/* line 185, app/assets/stylesheets/print1.scss */
+.w45 {
+  width: 45px;
+}
+
+/* line 186, app/assets/stylesheets/print1.scss */
+.w220 {
+  width: 220px;
+}
+
+/* line 187, app/assets/stylesheets/print1.scss */
+.w260 {
+  width: 260px;
+}
+
+/* line 189, app/assets/stylesheets/print1.scss */
+.header-left-part-bottom table {
+  margin-top: 10px;
+  width: 90%;
+}
+
+/* line 190, app/assets/stylesheets/print1.scss */
+.header-left-part-bottom table th {
+  padding: 5px 2px;
+  background: #f6f6f6;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* line 199, app/assets/stylesheets/print1.scss */
+.banner {
+  width: 100%;
+  height: 100%;
+  padding: 8rem 0rem;
+  background: url("/Podpisanie_dogovora_Image.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  margin-bottom: 0rem;
+}
+
+/* line 208, app/assets/stylesheets/print1.scss */
+.debug .banner {
+  width: 100%;
+  height: 100%;
+  padding: 8rem 0rem;
+  background: url("http://localhost:3000/Podpisanie_dogovora_Image.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  margin-bottom: 0rem;
+}
+
+/* line 217, app/assets/stylesheets/print1.scss */
+.banner-text {
+  margin-bottom: 0px;
+}
+
+/* line 220, app/assets/stylesheets/print1.scss */
+.banner-text td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 10px;
+  background: transparent;
+  border-bottom: none;
+  color: white;
+}
+
+/* line 228, app/assets/stylesheets/print1.scss */
+.banner-text h3 {
+  color: white;
+}
+
+/* line 231, app/assets/stylesheets/print1.scss */
+.second-block-left-part {
+  width: 49%;
+  float: left;
+  margin-right: 10px;
+}
+
+/* line 236, app/assets/stylesheets/print1.scss */
+.second-block-right-part {
+  width: 49%;
+  float: left;
+}
+
+/* line 240, app/assets/stylesheets/print1.scss */
+.second-block-left-part table tr, .second-block-right-part table tr {
+  height: 50px;
+  background-color: #f6f6f6;
+}
+
+/* line 245, app/assets/stylesheets/print1.scss */
+.second-block-left-part table th, .second-block-right-part table th {
+  padding-right: 5px;
+  padding-top: 0px;
+  padding-bottom: 2px;
+  background: white;
+  font-size: 18px;
+  text-align: left;
+  background-color: #f6f6f6;
+}
+
+/* line 254, app/assets/stylesheets/print1.scss */
+.second-block-label {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* line 258, app/assets/stylesheets/print1.scss */
+.second-block {
+  background-color: #f6f6f6;
+}
+
+/* line 261, app/assets/stylesheets/print1.scss */
+.third-block {
+  margin-top: 0rem;
+  margin-bottom: 30px;
+  background-color: #f6f6f6;
+}
+
+/* line 266, app/assets/stylesheets/print1.scss */
+.third-block table {
+  margin-bottom: 0;
+}
+
+/* line 269, app/assets/stylesheets/print1.scss */
+.third-block table td {
+  padding: 0;
+  background: transparent;
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* line 276, app/assets/stylesheets/print1.scss */
+.third-block-img1, .third-block-img2, .third-block-img3 {
+  background-repeat: no-repeat;
+  background-position: 0% 0%;
+  background-size: 100% 100%;
+  margin: 20px auto;
+}
+
+/* line 283, app/assets/stylesheets/print1.scss */
+.pechat {
+  max-height: 170px;
+  left: 0px;
+  top: -50%;
+  position: absolute;
+}
+
+/* line 290, app/assets/stylesheets/print1.scss */
+#kp_items td {
+  background-color: white;
+  padding: 5px;
+  border: 1px solid #80808059;
+  font-size: 13px;
+}
+
+/* line 296, app/assets/stylesheets/print1.scss */
+.kp_items_header th {
+  background-color: #f6f6f6;
+  border: 1px solid #80808059;
+  padding: 10px 5px;
+}
+
+/* line 301, app/assets/stylesheets/print1.scss */
+.item-nu, .item-image, .item-sku, .item-price, .item-qt, .item-sum, .item-itogo, .item-itogo-sum {
+  text-align: center;
+}
+
+/* line 304, app/assets/stylesheets/print1.scss */
+.item-title {
+  text-align: left;
+}
+
+/* line 307, app/assets/stylesheets/print1.scss */
+.item-itogo {
+  font-weight: bold;
+}
+
+/* line 310, app/assets/stylesheets/print1.scss */
+.kp-title {
+  margin-top: 40px;
+}
+
+/* line 312, app/assets/stylesheets/print1.scss */
+.footer-banner {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding-top: 10px;
+}
+
+/* line 318, app/assets/stylesheets/print1.scss */
+.footer-first-part, .footer-second-part, .footer-third-part {
+  width: 33.3%;
+  float: left;
+  text-align: center;
+  height: 155px;
+  font-size: 12px;
+}
+
+/* line 325, app/assets/stylesheets/print1.scss */
+.footer-first-part li, .footer-second-part li, .footer-third-part td {
+  text-align: left;
+}
+
+/* line 328, app/assets/stylesheets/print1.scss */
+.footer-first-part img {
+  max-width: 80%;
+}
+
+/* line 331, app/assets/stylesheets/print1.scss */
+.footer-first-part img, .footer-second-part img {
+  max-width: 80%;
+  max-height: 34px;
+}
+
+/* line 335, app/assets/stylesheets/print1.scss */
+.footer-third-part {
+  padding-top: 10px;
+  background-color: #636363;
+  font-size: 13px;
+  color: white;
+}
+
+/* line 341, app/assets/stylesheets/print1.scss */
+.footer-third-part .label {
+  font-size: 18px;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-bottom: 5px;
+}
+
+/* line 347, app/assets/stylesheets/print1.scss */
+.footer-third-part tr {
+  text-align: left;
+}
+
+/* line 350, app/assets/stylesheets/print1.scss */
+.footer-third-part th {
+  text-align: left;
+  padding-top: 10px;
+}
+
+/* line 354, app/assets/stylesheets/print1.scss */
+.footer-third-part th:first-child {
+  padding-left: 15px;
+}
+
+/* line 357, app/assets/stylesheets/print1.scss */
+.footer-third-part th:last-child {
+  padding-left: 0px;
+}
+
+/* line 360, app/assets/stylesheets/print1.scss */
+.image-product-contain {
+  max-height: 50px;
+  -o-object-fit: contain;
+     object-fit: contain;
+}
