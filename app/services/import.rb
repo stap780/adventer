@@ -1,12 +1,39 @@
 class Services::Import
 
+  DownloadPath = Rails.env.development? ? "#{Rails.root}" : "/var/www/adventer/shared"
+  MainText = 'Общество с ограниченной ответственностью «Адвентер»
+
+  188802, ЛО, г.Выборг, ул. Данилова, д.15 корп.1, оф.248
+        
+  Тел. 8 800 550 13 14
+  эл.почта: info@adventer.su
+  Сайт:  www.adventer.su
+        
+  ИНН: 4704097388
+  КПП: 470401001
+  ОГРН: 1154704001264
+  ОКПО: 23384032
+  ОКАТО: 41417000000
+  ОКВЭД: 46.49, 73.11
+  ОКОГУ: 4210014
+  ОКТМО: 41615101001
+        
+  Расчетный счет: 40702810555390000762
+  Кор. счет: 30101810500000000653
+  БИК: 044030653
+  Банк: Северо-Западный банк ПАО Сбербанк г. Санкт-Петербург
+        
+        
+  Упрощенная система налогообложения  – без НДС.'
+
+
   def self.product
     require 'open-uri'
     puts '=====>>>> СТАРТ InSales EXCEL '+Time.now.to_s
     url = "https://adventer.su/marketplace/96164.xls"
 		filename = url.split('/').last
     download = open(url)
-		download_path = "/var/www/adventer/shared/public/"+filename
+		download_path = Services::Import::DownloadPath+"/public/"+filename
 		IO.copy_stream(download, download_path)
     spreadsheet = Roo::Excel.new(download_path)
     header = spreadsheet.row(1)
@@ -49,46 +76,21 @@ class Services::Import
     current_process = "=====>>>> FINISH InSales EXCEL - #{Time.now.to_s} - Закончили обновление каталога товаров"
   	# ProductMailer.notifier_process(current_process).deliver_now
   end
-
-  MainText = 'Общество с ограниченной ответственностью «Адвентер»
-
-  188802, ЛО, г.Выборг, ул. Данилова, д.15 корп.1, оф.248
-        
-  Тел. 8 800 550 13 14
-  эл.почта: info@adventer.su
-  Сайт:  www.adventer.su
-        
-  ИНН: 4704097388
-  КПП: 470401001
-  ОГРН: 1154704001264
-  ОКПО: 23384032
-  ОКАТО: 41417000000
-  ОКВЭД: 46.49, 73.11
-  ОКОГУ: 4210014
-  ОКТМО: 41615101001
-        
-  Расчетный счет: 40702810555390000762
-  Кор. счет: 30101810500000000653
-  БИК: 044030653
-  Банк: Северо-Западный банк ПАО Сбербанк г. Санкт-Петербург
-        
-        
-  Упрощенная система налогообложения  – без НДС.'
   
   def self.excel_price(excel_price)
     require 'open-uri'
     puts "=====>>>> СТАРТ import excel_price #{Time.now.to_s}"
     
     puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
-    all_offers = Nokogiri::XML(File.open("/var/www/adventer/shared/public/1923917.xml")).xpath("//offer")
+    all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
     puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"    
     
     excel_price.update!(file_status: false)
-    File.delete("/var/www/adventer/shared/public/#{excel_price.id.to_s}_file.xlsx") if File.file?("/var/www/adventer/shared/public/#{excel_price.id.to_s}_file.xlsx").present?
+    File.delete(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx") if File.file?(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx").present?
     url = excel_price.link
 		filename = url.split('/').last
     download = open(url)
-		download_path = "/var/www/adventer/shared/public/"+filename
+		download_path = Services::Import::DownloadPath+"/public/"+filename
 		IO.copy_stream(download, download_path)
     data = Nokogiri::XML(open(download_path))
 
@@ -125,6 +127,8 @@ class Services::Import
     notice_main_label = s.add_style bg_color: 'FFFFFF', alignment: { horizontal: :center , vertical: :top }
     notice_label = s.add_style bg_color: 'FDE9D9', alignment: { horizontal: :center , vertical: :center}, b: true, sz: 12
     notice_b = s.add_style bg_color: 'FDE9D9', alignment: { horizontal: :center , vertical: :center }, sz: 12
+
+    pr_style = [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money]
     # end style section
 
     start_array_string = {0=>'B6',1=>'D6',2=>'F6',3=>'H6',4=>'B8',5=>'D8',6=>'F8',7=>'H8',8=>'B10',9=>'D10',10=>'F10',11=>'H10'}
@@ -217,7 +221,7 @@ class Services::Import
           second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
           if second_cats.present?
             second_cats.each do |s_cat|
-              cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(s_cat[:id]).take(4) :
+              cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(s_cat[:id]).take(2) :
                                                        Services::Import.collect_product_ids(s_cat[:id])
               if cat_products.present?
                 cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
@@ -226,22 +230,12 @@ class Services::Import
                 cat_products.each_with_index do |pr_id, index|
                   pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
                   if pr.present?
-                    title = pr.css('model').text.present? ? pr.css('model').text : ' '
-                    sku = pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id']
-                    desc = pr.css('description').text.present? ? pr.css('description').text : ' '
-                    price = Services::Import.price_shift(excel_price, pr.css('price').text)
-                    pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
-                    #puts pr_data.to_s if pr['id'] == '139020547'
-                    pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 150
-                    # puts "pr_row.row_index - "+pr_row.row_index.to_s
+                    data = Services::Import.collect_product_data_from_xml(pr,excel_price)
+                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                    pr_row = sheet.add_row pr_data, style: pr_style, height: 150
                     hyp_ref = "D#{(pr_row.row_index+1).to_s}"
-                    # puts hyp_ref.to_s
-                    sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
-
-                    picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
-                    file_name = pr['id']
-                    image = Services::Import.load_convert_image(picture_link, file_name)
-                    sheet.add_image(image_src: image, :noSelect => true, :noMove => true, hyperlink: pr.css('url').text) do |image|
+                    sheet.add_hyperlink location: data[:url], ref: hyp_ref
+                    sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
                       image.start_at 2, pr_row.row_index
                       image.end_at 3, pr_row.row_index+1
                       image.anchor.from.rowOff = 10_000
@@ -253,35 +247,31 @@ class Services::Import
             end
           end
           if !second_cats.present?
-            cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(4) :
+            cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(2) :
                                                      Services::Import.collect_product_ids(cat[:id])
             if cat_products.present?
               cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
               row_index_for_titles_array.push(cat_title_row.row_index+1)
               sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
-                cat_products.each_with_index do |pr_id, index|
+              cat_products.each_with_index do |pr_id, index|
                 pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
                 if pr.present?
-                  title = pr.css('model').text.present? ? pr.css('model').text : ' '
-                  sku = pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id']
-                  desc = pr.css('description').text.present? ? pr.css('description').text : ' '
-                  price = Services::Import.price_shift(excel_price, pr.css('price').text)
-                  pr_data = ['',(index+1).to_s,'',title,sku,desc,price]
-                  #puts pr_data.to_s if pr['id'] == '139020547'
-                  pr_row = sheet.add_row pr_data, style: [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money], height: 110
-                  # puts "pr_row.row_index - "+pr_row.row_index.to_s
-                  hyp_ref = "D#{(pr_row.row_index+1).to_s}"
-                  sheet.add_hyperlink location: pr.css('url').text, ref: hyp_ref
-                  
-                  picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
-                  file_name = pr['id']
-                  image = Services::Import.load_convert_image(picture_link, file_name)
-                  sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
-                    image.start_at 2, pr_row.row_index
-                    image.end_at 3, pr_row.row_index+1
-                    image.anchor.from.rowOff = 10_000
-                    image.anchor.from.colOff = 10_000
-                  end
+                    data = Services::Import.collect_product_data_from_xml(pr,excel_price)
+
+                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                    #puts pr_data.to_s if pr['id'] == '139020547'
+                    pr_row = sheet.add_row pr_data, style: pr_style, height: 150
+                    # puts "pr_row.row_index - "+pr_row.row_index.to_s
+                    hyp_ref = "D#{(pr_row.row_index+1).to_s}"
+                    # puts hyp_ref.to_s
+                    sheet.add_hyperlink location: data[:url], ref: hyp_ref
+
+                    sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
+                      image.start_at 2, pr_row.row_index
+                      image.end_at 3, pr_row.row_index+1
+                      image.anchor.from.rowOff = 10_000
+                      image.anchor.from.colOff = 10_000
+                    end
                 end          
               end
             end
@@ -305,7 +295,7 @@ class Services::Import
     puts "finish create seconds collections sheet"
 
     stream = p.to_stream
-    file_path = "/var/www/adventer/shared/public/#{excel_price.id.to_s}_file.xlsx"
+    file_path = Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx"
     File.open(file_path, 'wb') { |f| f.write(stream.read) }
 
     excel_price.update!(file_status: true) if File.file?(file_path).present?
@@ -315,7 +305,7 @@ class Services::Import
 
     current_process = "=====>>>> FINISH import excel_price - #{Time.now.to_s} - Закончили импорт каталога товаров для файла клиента"
   	# ProductMailer.notifier_process(current_process).deliver_now
-    FileUtils.rm_rf(Dir["/var/www/adventer/shared/public/excel_price/*"])
+    FileUtils.rm_rf(Dir[Services::Import::DownloadPath+"/public/excel_price/*"]) if Rails.env.development?
   end
 
   def self.collect_main_list_cat_info(categories_main_list)
@@ -348,7 +338,7 @@ class Services::Import
         ##### this code for production because simple way (standart load file) not work and have problem with minimagick convert
         temp_filename = "temp_"+file_name+"."+input_path.split('.').last
         # download = open(input_path)
-        download_path = "/var/www/adventer/shared/public/excel_price/"+temp_filename
+        download_path = Services::Import::DownloadPath+"/public/excel_price/"+temp_filename
         # IO.copy_stream(download, download_path)
         f = File.new(download_path, "wb")
         f << response.body
@@ -369,13 +359,27 @@ class Services::Import
       }
   end
 
+  def self.collect_product_data_from_xml(pr, excel_price)
+    picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
+    data = {
+            id: pr['id'],
+            title: pr.css('model').text.present? ? pr.css('model').text : ' ',
+            sku: pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id'],
+            desc: pr.css('description').text.present? ? pr.css('description').text : ' ',
+            price: Services::Import.price_shift(excel_price, pr.css('price').text),
+            url: pr.css('url').text,
+            image: Services::Import.load_convert_image(picture_link, pr['id'])
+          }
+    data
+  end
+  
   def self.process_image(link, file_name)
     image_process = ImageProcessing::MiniMagick.source(link)
     result = file_name == "logo" ? link : image_process.resize_and_pad!(200, 200).path
     image_magic = MiniMagick::Image.open(result)
     convert_image = image_magic.format("jpeg")
-    convert_image.write("/var/www/adventer/shared/public/excel_price/#{file_name}.jpeg")
-    image = File.expand_path("/var/www/adventer/shared/public/excel_price/#{file_name}.jpeg")
+    convert_image.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpeg")
+    image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpeg")
   end
 
   def self.price_shift(excel_price, price)
@@ -402,7 +406,7 @@ class Services::Import
     input_path = "https://adventer.su/marketplace/1923917.xml"
     # puts "input_path - "+input_path.to_s
     # puts "file_name - "+file_name.to_s
-    download_path = "/var/www/adventer/shared/public/1923917.xml"
+    download_path = Services::Import::DownloadPath+"/public/1923917.xml"
     File.delete(download_path) if File.file?(download_path).present?
 
     RestClient.get( input_path ) { |response, request, result, &block|
