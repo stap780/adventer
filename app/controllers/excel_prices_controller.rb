@@ -87,6 +87,11 @@ class ExcelPricesController < ApplicationController
     send_file(file_path)
   end
 
+  def get_full_catalog
+    Rails.env.development? ? Services::Import.load_all_catalog_xml : ImportFullCatalogJob.perform_later(@excel_price)
+    redirect_to excel_prices_url, notice: 'Запущен процесс создания файла эксель. Дождитесь выполнении процесса.'
+  end
+
 
   private
     # Use callbacks to share common setup or constraints between actions.

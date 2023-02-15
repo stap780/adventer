@@ -6,6 +6,7 @@ Rails.application.routes.draw do
     collection do
       get :check_file_status
       post :delete_selected
+      get :get_full_catalog
     end
   end
   resources :kp_products

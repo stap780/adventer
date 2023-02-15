@@ -151,6 +151,7 @@ class Services::Import
     notice_text_main_sheet.add_run('Подсказка: ', b: true, color: 'EA4488')
     notice_text_main_sheet.add_run('для того чтобы открыть нужную категорию нажмите на название или вкладку')
   
+    puts "start create main sheet"
     wb.add_worksheet(name: 'Навигация по каталогу') do |sheet|
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
@@ -159,8 +160,8 @@ class Services::Import
       sheet.add_row ['',notice_text_main_sheet,'','','','','','','','',''], height: 20, style: notice_main_label
 
       count_rows = categories_for_list.count < 4 ? categories_for_list.count : (categories_for_list.count/4).ceil
-      puts "count_rows - "+count_rows.to_s
-      puts "start create main sheet rows"
+      # puts "count_rows - "+count_rows.to_s
+      # puts "start create main sheet rows"
       Array(0..count_rows).each do |arr|
         sheet.add_row ['','','','','','','','','','',''], height: 150, style: bg_w
         sheet.add_row ['','','','','','','','','','',''], height: 40, style: [bg_w,nil,bg_w,nil,bg_w,nil,bg_w,nil,bg_w,bg_w,bg_w]
@@ -207,92 +208,95 @@ class Services::Import
       sheet['J6'].style = but_rekv
       puts "finish add collections to main sheet"
     end
+    puts "finish create main sheet"
 
-    row_index_for_titles_array = []
-    puts "start create seconds collections sheet"
+    # row_index_for_titles_array = []
+    puts "start create seconds collections sheets"
     categories_for_list.each_with_index do |cat, index|
-      puts "start create sheet - "+cat[:title]
+      row_index_for_titles_array = []
+      puts "start create sheet -> "+cat[:title]
       notice_text = Axlsx::RichText.new
       notice_text.add_run('Подсказка: ', :b => true)
       notice_text.add_run('для того чтобы открыть позицию на сайте нажмите на наименование/фото товара')
-        wb.add_worksheet(name: cat[:title].at(0..30).gsub('/',',')) do |sheet|
-          sheet.add_row ['','<= НА ГЛАВНУЮ','', cat[:title]], style: [nil,back_button,back_button,ind_header], height: 30
-          sheet.add_row ['',notice_text,'','','','',''], style: [nil,notice_b,notice_label,notice_b,notice_b,notice_b,notice_b,notice_b], height: 20
-          second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
-          if second_cats.present?
-            second_cats.each do |s_cat|
-              cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(s_cat[:id]).take(2) :
-                                                       Services::Import.collect_product_ids(s_cat[:id])
-              if cat_products.present?
-                cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
-                row_index_for_titles_array.push(cat_title_row.row_index+1)
-                sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20                  
-                cat_products.each_with_index do |pr_id, index|
-                  pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
-                  if pr.present?
-                    data = Services::Import.collect_product_data_from_xml(pr,excel_price)
-                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
-                    pr_row = sheet.add_row pr_data, style: pr_style, height: 150
-                    hyp_ref = "D#{(pr_row.row_index+1).to_s}"
-                    sheet.add_hyperlink location: data[:url], ref: hyp_ref
-                    sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
-                      image.start_at 2, pr_row.row_index
-                      image.end_at 3, pr_row.row_index+1
-                      image.anchor.from.rowOff = 10_000
-                      image.anchor.from.colOff = 10_000
-                    end
-                  end           
-                end
-              end
-            end
-          end
-          if !second_cats.present?
-            cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(2) :
-                                                     Services::Import.collect_product_ids(cat[:id])
+      wb.add_worksheet(name: cat[:title].at(0..30).gsub('/',',')) do |sheet|
+        sheet.add_row ['','<= НА ГЛАВНУЮ','', cat[:title]], style: [nil,back_button,back_button,ind_header], height: 30
+        sheet.add_row ['',notice_text,'','','','',''], style: [nil,notice_b,notice_label,notice_b,notice_b,notice_b,notice_b,notice_b], height: 20
+        second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
+        if second_cats.present?
+          second_cats.each do |s_cat|
+            cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(s_cat[:id]).take(15) :
+                                                      Services::Import.collect_product_ids(s_cat[:id])
             if cat_products.present?
-              cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
+              cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
               row_index_for_titles_array.push(cat_title_row.row_index+1)
-              sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
+              sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20                  
               cat_products.each_with_index do |pr_id, index|
                 pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
                 if pr.present?
-                    data = Services::Import.collect_product_data_from_xml(pr,excel_price)
-
-                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
-                    #puts pr_data.to_s if pr['id'] == '139020547'
-                    pr_row = sheet.add_row pr_data, style: pr_style, height: 150
-                    # puts "pr_row.row_index - "+pr_row.row_index.to_s
-                    hyp_ref = "D#{(pr_row.row_index+1).to_s}"
-                    # puts hyp_ref.to_s
-                    sheet.add_hyperlink location: data[:url], ref: hyp_ref
-
-                    sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
-                      image.start_at 2, pr_row.row_index
-                      image.end_at 3, pr_row.row_index+1
-                      image.anchor.from.rowOff = 10_000
-                      image.anchor.from.colOff = 10_000
-                    end
-                end          
+                  data = Services::Import.collect_product_data_from_xml(pr,excel_price)
+                  pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                  pr_row = sheet.add_row pr_data, style: pr_style, height: 150
+                  hyp_ref = "D#{(pr_row.row_index+1).to_s}"
+                  sheet.add_hyperlink location: data[:url], ref: hyp_ref
+                  sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
+                    image.start_at 2, pr_row.row_index
+                    image.end_at 3, pr_row.row_index+1
+                    image.anchor.from.rowOff = 10_000
+                    image.anchor.from.colOff = 10_000
+                  end
+                end           
               end
             end
           end
+        end
+        if !second_cats.present?
+          cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(15) :
+                                                    Services::Import.collect_product_ids(cat[:id])
+          if cat_products.present?
+            cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
+            row_index_for_titles_array.push(cat_title_row.row_index+1)
+            sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
+            cat_products.each_with_index do |pr_id, index|
+              pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
+              if pr.present?
+                  data = Services::Import.collect_product_data_from_xml(pr,excel_price)
 
-          sheet.merge_cells("B1:C1")
-          sheet.merge_cells("D1:G1")
-          sheet.merge_cells("B2:G2")
-          sheet.add_hyperlink( location: "'Навигация по каталогу'!A7", target: :sheet, ref: 'B1' )
-          sheet.column_widths 2,10,25,40,40,40,40,2
-          merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
-          merge_ranges.uniq.each { |range| sheet.merge_cells(range) }
-          sheet.sheet_view.pane do |pane|
-            pane.state = :frozen
-            pane.x_split = 1
-            pane.y_split = 2
+                  pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                  #puts pr_data.to_s if pr['id'] == '139020547'
+                  pr_row = sheet.add_row pr_data, style: pr_style, height: 150
+                  # puts "pr_row.row_index - "+pr_row.row_index.to_s
+                  hyp_ref = "D#{(pr_row.row_index+1).to_s}"
+                  # puts hyp_ref.to_s
+                  sheet.add_hyperlink location: data[:url], ref: hyp_ref
+
+                  sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
+                    image.start_at 2, pr_row.row_index
+                    image.end_at 3, pr_row.row_index+1
+                    image.anchor.from.rowOff = 10_000
+                    image.anchor.from.colOff = 10_000
+                  end
+              end          
+            end
           end
         end
-      puts "finish create sheet - "+cat[:title]
+
+        sheet.merge_cells("B1:C1")
+        sheet.merge_cells("D1:G1")
+        sheet.merge_cells("B2:G2")
+        sheet.add_hyperlink( location: "'Навигация по каталогу'!A7", target: :sheet, ref: 'B1' )
+        sheet.column_widths 2,10,25,40,40,40,40,2
+        puts "row_index_for_titles_array => "+row_index_for_titles_array.to_s
+        merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
+        merge_ranges.uniq.each { |range| sheet.merge_cells(range) }
+        sheet.sheet_view.pane do |pane|
+          pane.state = :frozen
+          pane.x_split = 1
+          pane.y_split = 2
+        end
+      end
+      puts "finish create sheet -> "+cat[:title]
     end
-    puts "finish create seconds collections sheet"
+    puts "finish create seconds collections sheets"
 
     stream = p.to_stream
     file_path = Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx"
