@@ -12,7 +12,7 @@
           <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle btn-sm" data-bs-toggle="dropdown">Действия</button>
           <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
             <%= link_to 'Создать', new_excel_price_path, class: 'dropdown-item' %>
-            <%= link_to 'Обновить файл с полным каталогом', get_full_catalog_excel_prices_path, class: 'dropdown-item' %>
+            <%= link_to 'Загрузить полный каталог', get_full_catalog_excel_prices_path, class: 'dropdown-item' %>
           </div>
         </div>
       </div>
@@ -54,10 +54,16 @@
         <td><%= excel_price.title %></td>
         <td><%= excel_price.link %></td>
         <td><%= excel_price.comment %></td>
-        <td data-status="<%= excel_price.file_status%>"><%= link_to "Создать", import_excel_price_path(excel_price), id: "import_#{excel_price.id}", class: "btn btn-light btn-sm", role: "button" %></td>
         <td>
+        <% if excel_price.file_status == 'not start' || excel_price.file_status == 'end' %>
+        <%= link_to "Создать", import_excel_price_path(excel_price), id: "import_#{excel_price.id}", class: "btn btn-light btn-sm", role: "button", remote: true %>
+        <% else %>
+        <%= link_to "Создать", import_excel_price_path(excel_price), id: "import_#{excel_price.id}", class: "btn btn-light btn-sm disabled", role: "button", remote: true %>
+        </td>
+        <% end %>
         <% file = "#{Rails.public_path}/#{excel_price.id.to_s}_file.xlsx" %>
-        <% if excel_price.file_status == true && File.file?(file) %>
+        <td>
+        <% if File.file?(file) %>
           <%= link_to '<span class="oi oi-cloud-download"></span>'.html_safe, file_export_excel_price_path(excel_price), id: "file_export_#{excel_price.id}", class: "btn btn-light btn-sm", title: "file export" %>
           <br><% size = File.size(file) %><%= number_to_human_size(size) %>
         <% else %>

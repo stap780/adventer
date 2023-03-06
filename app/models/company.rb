@@ -4,6 +4,7 @@ class Company < ApplicationRecord
   has_many_attached :images, dependent: :destroy
   validates :inn, presence: true
   validates :inn, uniqueness: true
+  validates :title, presence: true
 
   scope :our, -> { where('our_company = ?', true).order(:id) }
 

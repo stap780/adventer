@@ -8,4 +8,5 @@ class KpProduct < ApplicationRecord
 
   delegate :title, to: :product, prefix: true, allow_nil: true # для автокомплита
 
+
 end

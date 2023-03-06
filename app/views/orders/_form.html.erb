@@ -1,35 +1,39 @@
 <%= simple_form_for (@order) do |f| %>
 <%= f.error_notification %>
 <%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
-<div class="row mx-auto">
-  <div class="col-12 h3"><%= page_title %></div>
+<div class="row mx-auto pt-1">
+  <div class="col-12 row align-items-center my-3">
+  <div class="h3 mb-0 col-1"><%= page_title %></div>
+  <%= f.input :number, label: false, as: :string, disabled: true, placeholder: "Номер заказа" , wrapper_html: { class: "col-1" } %>
+  <div class="col-1 text-center">от</div>
+  <%= f.input :created_at, label: false, as: :date, html5: true, disabled: true, placeholder: "Дата", wrapper_html: { class: "col-2" } %>
+  </div>
   <div class="col-12 row align-content-start mb-5">
-    <%= f.input :number, label: "Номер", as: :string, disabled: true, placeholder: "Номер заказа" , wrapper_html: { class: "col-1" } %>
-    <%= f.input :created_at, label: "Создан", as: :date, html5: true, disabled: true, placeholder: "Дата", wrapper_html: { class: "col-2" } %>
+  <% if current_user.admin? || current_user.operator? %>
+    <%= f.association :user, label: "Менеджер", input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
+  <% else %>
+    <%= f.association :user, label: "Менеджер", disabled: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
+  <% end %>
+
     <%= f.input :status, label: "Статус", collection: Order::STATUS, prompt: "Статус", input_html: { class: "form-select" } , wrapper_html: { class: "col-2" } %>
     <%= f.association :client, prompt: "Выберите контакт", label: "Контакт", label_method: :order_contact_name, value_method: :id, input_html: { class: "form-select" }, wrapper_html: { class: "col-3" } %>
-<div class="form-group col-4">
-  <label class="">Данные контакта:</label><br>
-  <% if @order.client %>
-  <small class="form-text text-muted">
-  Телефон: <%= @order.client.phone %> E-mail: <%= @order.client.email %><br>
-  Область: <%= @order.client.state %> Адрес: <%= @order.client.address %>
-  </small>
-  <% end %>
-</div>
-<% if current_user.admin? || current_user.operator? %>
-  <%= f.association :user, label: "Менеджер", input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
-<% else %>
-  <%= f.association :user, label: "Менеджер", disabled: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
-<% end %>
+    <div class="form-group col-4">
+      <label class="">Данные контакта:</label><br>
+      <% if @order.client %>
+      <small class="form-text text-muted">
+      Телефон: <%= @order.client.phone %> E-mail: <%= @order.client.email %><br>
+      Область: <%= @order.client.state %> Адрес: <%= @order.client.address %>
+      </small>
+      <% end %>
+    </div>
 
     <%# f.association :company, prompt: "Компания", input_html: { class: "form-select" }, include_blank: true, selected: lambda { |company|  @order.client.companies.first.id if !@order.company_id.present? && @order.client.companies.present? }, wrapper_html: { class: "col-6 mt-3" } %>
     <%# f.association :company, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-7 mt-3" } %>
     <%# f.input :company_title, as: :autocomplete, label: "Компания", url: autocomplete_company_title_orders_path, wrapper_html: { class: "col-6 mt-3" }, input_html: { 'data-id-element' => '#order_company_id' } %>
     <%# f.input :company_id, as: :hidden %>
-    <%= f.association :companykp1, label: 'Компания КП1', collection: Company.our, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
-    <%= f.association :companykp2, label: 'Компания КП2', collection: Company.our, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
-    <%= f.association :companykp3, label: 'Компания КП3', collection: Company.our, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
+    <%# f.association :companykp1, label: 'Компания КП1', collection: Company.our, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
+    <%# f.association :companykp2, label: 'Компания КП2', collection: Company.our, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
+    <%# f.association :companykp3, label: 'Компания КП3', collection: Company.our, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
   </div>
   <div class="col-12 row align-content-start align-items-center">
     <% if @order.new_record? %>
@@ -48,7 +52,7 @@
             <th>Статус</th>
             <th>Название</th>
             <th>Дата</th>
-            <th>Кол-во товаров</th>
+            <th>Кол-во поз</th>
             <th>Сумма</th>
             <th>Комментарий</th>
             <% colspan_integer = [1]%>
@@ -69,30 +73,20 @@
               <td><%= kp.title %></td>
               <td><%= kp.created_at.strftime("%d.%m.%Y") %></td>
               <td><%= kp.kp_products.count %></td>
-              <td><%= kp.kp_products.sum(:sum) %></td>
+              <td><%= number_to_currency(kp.kp_products.sum(:sum), unit: '₽ ', delimiter: ' ', format: "%n %u") %></td>
               <td><%= kp.comment %></td>
-              <td><%= link_to '<span class="oi oi-pencil"></span>'.html_safe, edit_order_kp_path(@order, kp) %></td>
+              <td><%= link_to '<span class="oi oi-pencil"></span>'.html_safe, edit_order_kp_path(@order, kp), title: 'Редактировать' %></td>
               <% if can? :copy, Kp %>
-              <td><%= link_to '<span class="oi oi-file"></span>'.html_safe, copy_order_kps_path(@order, kp) %></td>
+              <td><%= link_to '<span class="oi oi-file"></span>'.html_safe, copy_order_kps_path(@order, kp), title: 'Копировать' %></td>
               <% end %>
               <td class="nav-item dropdown">
                 <a class="dropdown-toggle" href="#" id="print_navbardrop" data-bs-toggle="dropdown"><i class="oi oi-print"></i></a>
                 <div class="dropdown-menu">
-                  <%= link_to "КП1", print1_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
-                  <%if @order.companykp2.present? %>
-                  <%= link_to "КП2", print2_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
-                  <%= link_to "КП2 ранд", print2_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
-                  <% else %>
-                  <%= link_to "КП2", print2_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item'} %>
-                  <%= link_to "КП2 ранд", print2_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item'} %>
-                  <% end %>
-                  <%if @order.companykp3.present? %>
-                  <%= link_to "КП3", print3_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
-                  <%= link_to "КП3 ранд", print3_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
-                  <% else %>
-                  <%= link_to "КП3", print3_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item'} %>
-                  <%= link_to "КП3 ранд", print3_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item'} %>
-                  <% end %>
+                  <%= link_to @order.companykp1.title, print1_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
+                  <%= link_to @order.companykp2.title, print2_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
+                  <%= link_to @order.companykp2.title+" ранд", print2_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
+                  <%= link_to @order.companykp3.title, print3_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
+                  <%= link_to @order.companykp3.title+" ранд", print3_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
                 </div>
               </td>
               <% if current_user.admin? %>
@@ -107,7 +101,7 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-3 btn-group mt-5">
+  <div class="col-2 btn-group mt-5">
     <%= f.button :submit, class: 'btn btn-success' %>
     <%= link_to 'Назад', orders_path, class: 'btn btn-outline-primary' %>
   </div>

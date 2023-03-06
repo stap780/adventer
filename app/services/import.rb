@@ -85,7 +85,7 @@ class Services::Import
     all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
     puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"    
     
-    excel_price.update!(file_status: false)
+    excel_price.update!(file_status: 'process')
     File.delete(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx") if File.file?(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx").present?
     url = excel_price.link
 		filename = url.split('/').last
@@ -98,8 +98,7 @@ class Services::Import
 
     all_categories = Services::Import.collect_main_list_cat_info(categories)
 
-    select_main_cat = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? nil : 
-                                                                           all_categories.select{|c| c[:parent_id] == nil}
+    select_main_cat = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? nil : all_categories.select{|c| c[:parent_id] == nil}
 
     categories_for_list = select_main_cat.present? ? all_categories.select{|c| c[:parent_id] == select_main_cat[0][:id]} : 
                                                      all_categories
@@ -160,22 +159,12 @@ class Services::Import
       sheet.add_row ['',notice_text_main_sheet,'','','','','','','','',''], height: 20, style: notice_main_label
 
       count_rows = categories_for_list.count < 4 ? categories_for_list.count : (categories_for_list.count/4).ceil
-      # puts "count_rows - "+count_rows.to_s
-      # puts "start create main sheet rows"
       Array(0..count_rows).each do |arr|
         sheet.add_row ['','','','','','','','','','',''], height: 150, style: bg_w
         sheet.add_row ['','','','','','','','','','',''], height: 40, style: [bg_w,nil,bg_w,nil,bg_w,nil,bg_w,nil,bg_w,bg_w,bg_w]
       end
       sheet.add_row ['','','','','','','','','','',''], height: 80, style: bg_w
-      # puts "finish create main sheet rows"
-      # puts "start add collections to main sheet"
-      # puts "categories_for_list => "+categories_for_list.to_s
-      # puts "categories_for_list COUNT => "+categories_for_list.count.to_s
-      # sleep 0.5
       categories_for_list.each_with_index do |cat, index|
-        # puts "cat => "+cat.to_s
-        # puts "start_array => "+start_array.to_s
-        # puts "start_array[index] => "+start_array[index].to_s
           column_start = start_array[index][0]
           row_start = start_array[index][1]
           column_end = start_array[index][0]
@@ -184,10 +173,7 @@ class Services::Import
           sheet.rows[row_end+1].cells[column_end].value = cat[:title]
           sheet.rows[row_end+1].cells[column_end].style = main_label
           file_name = cat[:id]
-          image = Services::Import.load_convert_image(cat[:image], file_name)
-          # puts "image -"+image
-          # puts "start_array[index].to_s - "+start_array[index].to_s
-          # puts "end_array[index].to_s - "+end_array[index].to_s
+          image = Services::Import.process_image(cat[:image], file_name)
           sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
             image.width = 200
             image.height = 200
@@ -202,7 +188,7 @@ class Services::Import
       sheet.merge_cells('B4:H4')
       sheet.merge_cells('B5:H5')
       sheet.merge_cells('J6:J11')
-      logo_image = Services::Import.load_convert_image('http://157.245.114.19/adventer_logo_excel.jpg', 'logo')
+      logo_image = Services::Import::DownloadPath+"/public/adventer_logo_excel.jpg"
       sheet.add_image(image_src: logo_image, start_at: 'A1', end_at: 'L4')
       sheet['J6'].value = Services::Import::MainText
       sheet['J6'].style = but_rekv
@@ -302,7 +288,7 @@ class Services::Import
     file_path = Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx"
     File.open(file_path, 'wb') { |f| f.write(stream.read) }
 
-    excel_price.update!(file_status: true) if File.file?(file_path).present?
+    excel_price.update!(file_status: 'end') if File.file?(file_path).present?
     File.delete(download_path) if File.file?(download_path).present?
 
     puts "=====>>>> FINISH import excel_price #{Time.now.to_s}"
@@ -334,34 +320,34 @@ class Services::Import
     StringIO.new(response.body)
   end
 
-  def self.load_convert_image(image_link, file_name)
-    input_path = image_link.present? ? image_link : "http://157.245.114.19/kp_logo_footer.png"
-    RestClient.get( input_path ) { |response, request, result, &block|
-      case response.code
-      when 200
-        ##### this code for production because simple way (standart load file) not work and have problem with minimagick convert
-        temp_filename = "temp_"+file_name+"."+input_path.split('.').last
-        # download = open(input_path)
-        download_path = Services::Import::DownloadPath+"/public/excel_price/"+temp_filename
-        # IO.copy_stream(download, download_path)
-        f = File.new(download_path, "wb")
-        f << response.body
-        f.close
-        new_image_link = Rails.env.development? ? "http://localhost:3000/excel_price/"+temp_filename : "http://157.245.114.19/excel_price/"+temp_filename
-        image = Services::Import.process_image(new_image_link, file_name)
-      when 400
-        puts "image have 400 response"
-        link = "http://157.245.114.19/kp_logo_footer.png"
-        image = Services::Import.process_image(link, file_name)
-      when 404
-        puts "image have 404 response"
-        link = "http://157.245.114.19/kp_logo_footer.png"
-        image = Services::Import.process_image(link, file_name)
-      else
-        response.return!(&block)
-      end
-      }
-  end
+  # def self.load_convert_image(image_link, file_name)
+  #   input_path = image_link.present? ? image_link : "http://157.245.114.19/kp_logo_footer.png"
+  #   RestClient.get( input_path ) { |response, request, result, &block|
+  #     case response.code
+  #     when 200
+  #       ##### this code for production because simple way (standart load file) not work and have problem with minimagick convert
+  #       temp_filename = "temp_"+file_name+"."+input_path.split('.').last
+  #       # download = open(input_path)
+  #       download_path = Services::Import::DownloadPath+"/public/excel_price/"+temp_filename
+  #       # IO.copy_stream(download, download_path)
+  #       f = File.new(download_path, "wb")
+  #       f << response.body
+  #       f.close
+  #       new_image_link = Rails.env.development? ? "http://localhost:3000/excel_price/"+temp_filename : "http://157.245.114.19/excel_price/"+temp_filename
+  #       image = Services::Import.process_image(new_image_link, file_name)
+  #     when 400
+  #       puts "image have 400 response"
+  #       link = "http://157.245.114.19/kp_logo_footer.png"
+  #       image = Services::Import.process_image(link, file_name)
+  #     when 404
+  #       puts "image have 404 response"
+  #       link = "http://157.245.114.19/kp_logo_footer.png"
+  #       image = Services::Import.process_image(link, file_name)
+  #     else
+  #       response.return!(&block)
+  #     end
+  #     }
+  # end
 
   def self.collect_product_data_from_xml(pr, excel_price)
     picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
@@ -372,18 +358,16 @@ class Services::Import
             desc: pr.css('description').text.present? ? pr.css('description').text : ' ',
             price: Services::Import.price_shift(excel_price, pr.css('price').text),
             url: pr.css('url').text,
-            image: Services::Import.load_convert_image(picture_link, pr['id'])
+            image: Services::Import.process_image(picture_link, pr['id'])
           }
     data
   end
   
   def self.process_image(link, file_name)
-    image_process = ImageProcessing::MiniMagick.source(link)
-    result = file_name == "logo" ? link : image_process.resize_and_pad!(200, 200).path
-    image_magic = MiniMagick::Image.open(result)
-    convert_image = image_magic.format("jpeg")
-    convert_image.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpeg")
-    image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpeg")
+    result = ImageProcessing::MiniMagick.source(link).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
+    image_magic = MiniMagick::Image.open(result.path)
+    image_magic.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
+    image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
   end
 
   def self.price_shift(excel_price, price)
@@ -408,8 +392,6 @@ class Services::Import
 
   def self.load_all_catalog_xml
     input_path = "https://adventer.su/marketplace/1923917.xml"
-    # puts "input_path - "+input_path.to_s
-    # puts "file_name - "+file_name.to_s
     download_path = Services::Import::DownloadPath+"/public/1923917.xml"
     File.delete(download_path) if File.file?(download_path).present?
 

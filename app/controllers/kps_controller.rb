@@ -2,7 +2,7 @@ class KpsController < ApplicationController
   before_action :authenticate_user!
   authorize_resource
   before_action :get_order
-  before_action :set_kp, only: %i[show edit update destroy]
+  before_action :set_kp, only: %i[show edit update destroy print1 print2 print3]
   # autocomplete :product, :title, :extra_data => [:id, :title, :sku, :price, :desc], :display_value => :autocomplete_title, 'data-noMatchesLabel' => 'нет товара'
 
   # GET /kps
@@ -98,7 +98,7 @@ class KpsController < ApplicationController
   end
 
   def print1
-    @kp = Kp.find(params[:id])
+    # @kp = Kp.find(params[:id])
     # puts @kp.present?
     @our_company = @kp.order.companykp1
     if @our_company.present?
@@ -132,7 +132,7 @@ class KpsController < ApplicationController
   end
 
   def print2
-    @kp = Kp.find(params[:id])
+    # @kp = Kp.find(params[:id])
     @client = @kp.order.client
     @company = @kp.order.company
     @our_company = @kp.order.companykp2
@@ -187,7 +187,7 @@ class KpsController < ApplicationController
   end
 
   def print3
-    @kp = Kp.find(params[:id])
+    # @kp = Kp.find(params[:id])
     @company = @kp.order.company
     @our_company = @kp.order.companykp3
     puts @our_company.present?
@@ -256,7 +256,6 @@ class KpsController < ApplicationController
       format.csv { headers["Content-Disposition"] = "attachment; filename=\"#{filename}\"" }
     end
   end
-
 
   def import
     @kp = Kp.find(params[:id])

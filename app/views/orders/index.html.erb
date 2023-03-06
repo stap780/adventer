@@ -43,10 +43,13 @@
       <tr class="text-secondary">
         <th ><%= check_box_tag 'selectAll', 'selectAll'%></th>
         <th class="text-center">Статус</th>
-        <th class="text-center">Номер</th>
+        <th class="text-center">#</th>
+        <% if current_user.admin? %>
+        <th></th>
+        <% end %>
         <th>Контакт</th>
         <th>Дата</th>
-        <th>Сумма</th>
+        <th style="width:135px;">Сумма</th>
         <th>Ответственный</th>
         <!-- <th>Компания</th> -->
         <th>Кол-во КП</th>
@@ -56,21 +59,20 @@
 
     <tbody id="items_table" class="border-0">
       <% @orders.each do |order| %>
-        <tr>
+        <tr class="align-middle">
           <td><%= check_box_tag "order_ids[]", order.id %></td>
           <td class="<%= order_status_bg_color(order.status)%>"><%= order.status %></td>
-          <td class="text-center"><%= link_to order.number, edit_order_path(order) %>
-            <%= link_to 'Догрузить', download_orders_path(insid: order.insid), class: 'dropdown-item ' if current_user.admin? && order.insid.present? %>
-          </td>
-          <td><%= order.client.name if order.client %>
-            <p><%= order.client.surname if order.client %></p>
-          </td>
-          <td><%= order.created_at.strftime("%d.%m.%Y") %></td>
-          <td><%= order.kps.order('created_at' => 'asc' ).first.kp_products.sum(:sum) if order.kps.present? %></td>
-          <td><%= order.user.name if order.user %></td>
+          <td class="text-center"><%= link_to order.number, edit_order_path(order) %></td>
+          <% if current_user.admin? && order.insid.present? %>
+          <td class="px-0"><%= link_to '<span class="oi oi-reload"></span>'.html_safe, download_orders_path(insid: order.insid), class: 'dropdown-item' %></td>
+          <% end %>
+          <td><%= order.client.name if order.client %><br><b><%= order.client.surname if order.client %></b></td>
+          <td class="text-center"><%= order.created_at.strftime("%d.%m.%Y") %></td>
+          <td class=""><%= number_to_currency(order.kps.order('created_at' => 'asc' ).first.kp_products.sum(:sum), unit: '₽ ', delimiter: ' ', format: "%n %u") if order.kps.present? %></td>
+          <td class="text-center"><%= order.user.name if order.user %></td>
           <!-- <td><%# order.company.title if order.company %></td> -->
-          <td><%= order.kps.count %></td>
-          <td><%= link_to '<span class="oi oi-trash"></span>'.html_safe, order, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+          <td class="text-center"><%= order.kps.count %></td>
+          <td class="text-center"><%= link_to '<span class="oi oi-trash"></span>'.html_safe, order, method: :delete, data: { confirm: 'Are you sure?' } %></td>
         </tr>
       <% end %>
     </tbody>

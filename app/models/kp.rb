@@ -65,11 +65,12 @@ class Kp < ApplicationRecord
   end
 
   def set_title
-    if !self.order.present?
-      self.title = "Коммерческое предложение "+self.order_id.to_s if new_record?
-    else
-      self.title = "Коммерческое предложение "+self.order_id.to_s+"/"+self.order.kps.count.to_s if new_record?
-    end
+    # if !self.order.present?
+    #   self.title = "Коммерческое предложение "+self.order_id.to_s if new_record?
+    # else
+    #   self.title = "Коммерческое предложение "+self.order_id.to_s+"/"+self.order.kps.count.to_s if new_record?
+    # end
+    self.title = "Коммерческое предложение" if new_record?
   end
 
   def check_status_if_manager_set_print_ready

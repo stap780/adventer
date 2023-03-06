@@ -1,2 +1,3 @@
 $("main").prepend('<%= j render partial: "/layouts/messages" %>');
 $(".alert").delay(12000).slideUp(200, function() { $(this).alert('close'); });
+$("#import_<%= @excel_price.id %>").addClass('disabled');

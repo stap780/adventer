@@ -1,5 +1,5 @@
 <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { role: "form", class: "form-signin" }) do |f| %>
-<h2 class="form-signin-heading"><%= t('.sign_in', :default => "Вход в сервис") %></h2>
+<h2 class="form-signin-heading"><%= t('.sign_in', :default => "Адвентер") %><br><small>Вход в сервис</small></h2>
 <%= render "devise/shared/error_messages", resource: resource %>
 
 <%= f.email_field :email, autofocus: true, class: "form-control", placeholder: "Email" %>

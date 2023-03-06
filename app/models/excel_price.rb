@@ -16,7 +16,7 @@ class ExcelPrice < ApplicationRecord
     end
 
     def set_file_status_for_new_obj
-        self.file_status = false
+        self.file_status = 'not start'
     end
 
 

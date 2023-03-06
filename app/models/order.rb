@@ -118,8 +118,8 @@ class Order < ApplicationRecord
   def set_our_companies
     if new_record?
       self.companykp1_id = Company.our.first.id
-      self.companykp2_id = Company.our.first.id
-      self.companykp3_id = Company.our.first.id
+      self.companykp2_id = Company.our.second.present? ? Company.our.second.id : Company.our.first.id
+      self.companykp3_id = Company.our.third.present? ? Company.our.third.id : Company.our.first.id
     end
   end
 

@@ -13,8 +13,8 @@ class Ability
       # can :read, :all
       can [:read, :update], Order
       cannot :download, Order
-      can [:create, :update], Kp
-      can :copy, Kp
+      can [:create, :update, :copy, :delete], Kp
+      # can :copy, Kp
       can :autocomplete_product_title, Kp
       can [:print1, :print2, :print3], Kp
       can [:file_import, :file_export], Kp

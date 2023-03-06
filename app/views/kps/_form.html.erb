@@ -3,8 +3,8 @@
   <%= f.error_notification %>
   <%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
 
-<div class="row mx-auto">
-    <div class="col-12 row mt-3 mb-3">
+<div class="row mx-auto pt-1">
+    <div class="col-12 row align-items-center my-3">
       <div class="h4 col-2"><%= page_title %></div>
       <%= f.input :title, label: false, placeholder: 'Заголовок' , wrapper_html: { class: "col-8" }%>
     </div>
@@ -21,8 +21,8 @@
     <div class="col-12 row">
       <div class='links col-12 mt-3 mb-3'>
       <% if !@kp.new_record? %>
-      <%= link_to '<span class="oi oi-cloud-download"></span>'.html_safe, file_export_order_kps_path(@order, @kp, format: 'csv'), id: 'file_export', class: 'btn btn-light btn-sm', title: 'file export' %>
-      <%= link_to '<span class="oi oi-cloud-upload"></span>'.html_safe, file_import_order_kps_path(@order, @kp), remote: 'true', id: 'file_import', title: 'file import', 'data-bs-toggle' => "modal", 'data-bs-target' => '#modal-edit', class: 'btn btn-light btn-sm' %>
+      <%= link_to '<span class="oi oi-cloud-download"></span>'.html_safe, file_export_order_kps_path(@order, @kp, format: 'csv'), id: 'file_export', class: 'btn btn-light btn-sm', title: 'Экспорт' %>
+      <%= link_to '<span class="oi oi-cloud-upload"></span>'.html_safe, file_import_order_kps_path(@order, @kp), remote: 'true', id: 'file_import', title: 'Импорт', 'data-bs-toggle' => "modal", 'data-bs-target' => '#modal-edit', class: 'btn btn-light btn-sm' %>
       <% end %>
       <%= link_to_add_association "Добавить позицию", f, :kp_products, 'data-association-insertion-node' => "#kp_products", 'data-association-insertion-method' => "append", id: 'add_items', class: "btn btn-dark btn-sm", onclick: "initLine()"  %>
     </div>
@@ -61,7 +61,7 @@
 </div>
 
 <div class="row">
-  <div class="col-3 btn-group mt-5">
+  <div class="col-2 btn-group mt-5">
     <%= f.button :submit, class: 'btn btn-success' %>
     <%# link_to 'Назад', edit_order_path(@order), class: 'btn btn-outline-primary' %>
     <%= link_to 'Назад', :back, class: 'btn btn-outline-primary' %>
