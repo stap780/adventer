@@ -48,7 +48,7 @@
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>Тип КП</th>
+            <!--<th>Тип КП</th>-->
             <th>Статус</th>
             <th>Название</th>
             <th>Дата</th>
@@ -68,7 +68,7 @@
         <tbody>
           <% @order.kps.order('created_at' => 'asc' ).each do |kp| %>
             <tr class="align-middle">
-              <td><%= kp.vid %></td>
+              <!--<td><%# kp.vid %></td>-->
               <td class="<%= kp_status_bg_color(kp.status)%>"><%= kp.status %></td>
               <td><%= kp.title %></td>
               <td><%= kp.created_at.strftime("%d.%m.%Y") %></td>
