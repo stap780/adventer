@@ -87,7 +87,7 @@
                   <%= link_to @order.companykp2.title+" ранд", print2_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
                   <%= link_to @order.companykp3.title, print3_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
                   <%= link_to @order.companykp3.title+" ранд", print3_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
-                  <%= link_to 'Пустое', print4_order_kps_path(@order, kp, :format => :xlsx), { class: 'dropdown-item' } %>
+                  <%= link_to 'Пустое (xlsx)', print4_order_kps_path(@order, kp, :format => :xlsx), { class: 'dropdown-item' } %>
                 </div>
               </td>
               <% if current_user.admin? %>
