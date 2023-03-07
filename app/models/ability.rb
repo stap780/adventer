@@ -23,11 +23,9 @@ class Ability
       can :manage, Client
       can :manage, Company
     when 'grand_manager'
-      # can :read, :all
       can [:read, :update], Order
       cannot :download, Order
       can [:create, :update, :copy, :delete], Kp
-      # can :copy, Kp
       can :autocomplete_product_title, Kp
       can [:print1, :print2, :print3, :print4], Kp
       can [:file_import, :file_export], Kp
@@ -41,7 +39,7 @@ class Ability
       cannot :create, Kp
       cannot :copy, Kp
     when 'bookkeeper'
-      can [:read, :update], Order
+      can [:index,:read,:update], Order
       cannot :download, Order
       can :index_all, Kp
       can :update, Kp

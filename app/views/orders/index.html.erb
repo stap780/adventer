@@ -2,7 +2,7 @@
   <div class="col-2 row">
     <div class="col-md-12 p-0">
       <div class="h3">Заказы</div>
-      <div class="h6">Всего - <%= Order.count %></div>
+      <div class="h6">Всего - <%= Order.count %><br>Отфильтрованно: <%= @orders.count %></div>
     </div>
   </div>
   <div class="col-10 pl-0 pr-0 row">
@@ -25,7 +25,7 @@
     <div class="input-group input-group-sm">
       <%= f.select :status_in, Order::STATUS, { :prompt => 'Статус'}, class: "form-select", style: "max-width: 180px;" %>
       <%= f.search_field :number_eq , placeholder: 'Номер', class: "form-control", style: "max-width: 180px;" %>
-      <%= f.collection_select :user_id_eq, User.all, "id", "name", {:prompt => 'Пользователь'} , {:class => "form-select", :style => "max-width:200px;"} if current_user.admin? %>
+      <%= f.collection_select :user_id_eq, User.all, "id", "name", {:prompt => 'Пользователь'} , {:class => "form-select", :style => "max-width:200px;"} if current_user.can_show_all_order? %>
       <%# f.collection_select :client_id_eq, Client.all, "id", "full_name", {:prompt => 'Клиент'} , {:class => "form-select", :style => "max-width:200px;"} %>
       <%# f.text_field :client_name_cont, "data-autocomplete" => autocomplete_client_name_orders_path, class: "form-control input-sm" , placeholder: 'Контакт'%>
       <%= f.search_field :client_name_or_client_surname_cont, class: "form-control input-sm" , placeholder: 'Контакт'%>

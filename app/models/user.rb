@@ -28,6 +28,14 @@ class User < ApplicationRecord
     role.name.include?('bookkeeper')
   end
 
+  def grand_manager?
+    role.name.include?('grand_manager')
+  end
+
+  def can_show_all_order?
+    admin? || operator? || bookkeeper? || grand_manager?
+  end
+
 
   def avatar_thumbnail
     if avatar.attached?
