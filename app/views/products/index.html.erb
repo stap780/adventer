@@ -48,7 +48,7 @@
 
   <tbody id="items_table" class="border-0">
     <% @products.each do |product| %>
-    <tr>
+    <tr class="align-middle">
       <td><%= check_box_tag "product_ids[]", product.id %></td>
         <td style="width:170px;"><%= product.sku.truncate(20) if product.sku.present? %></td>
         <td style="width:250px;"><%= link_to product.title, edit_product_path(product)%></td>

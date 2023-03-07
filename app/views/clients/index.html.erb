@@ -49,7 +49,7 @@
 
   <tbody id="items_table" class="border-0">
     <% @clients.each do |client| %>
-    <tr>
+    <tr class="align-middle">
       <td><%= check_box_tag "client_ids[]", client.id %></td>
         <td><%= link_to client.name, edit_client_path(client) %><br /><%= client.middlename %><br /><%= client.surname %></td>
         <td><%= client.phone %></td>

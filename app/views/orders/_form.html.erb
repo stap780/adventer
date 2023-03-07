@@ -72,7 +72,7 @@
               <td class="<%= kp_status_bg_color(kp.status)%>"><%= kp.status %></td>
               <td><%= kp.title %></td>
               <td><%= kp.created_at.strftime("%d.%m.%Y") %></td>
-              <td><%= kp.kp_products.count %></td>
+              <td style="width:135px;"><%= kp.kp_products.count %></td>
               <td><%= number_to_currency(kp.kp_products.sum(:sum), unit: '₽ ', delimiter: ' ', format: "%n %u") %></td>
               <td><%= kp.comment %></td>
               <td><%= link_to '<span class="oi oi-pencil"></span>'.html_safe, edit_order_kp_path(@order, kp), title: 'Редактировать' %></td>
@@ -87,6 +87,7 @@
                   <%= link_to @order.companykp2.title+" ранд", print2_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
                   <%= link_to @order.companykp3.title, print3_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
                   <%= link_to @order.companykp3.title+" ранд", print3_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
+                  <%= link_to 'Пустое', print4_order_kps_path(@order, kp, :format => :xlsx), { class: 'dropdown-item' } %>
                 </div>
               </td>
               <% if current_user.admin? %>

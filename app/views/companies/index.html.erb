@@ -51,7 +51,7 @@
 
   <tbody id="items_table" class="border-0">
     <% @companies.each do |company| %>
-    <tr>
+    <tr class="align-middle">
       <td><%= check_box_tag "company_ids[]", company.id %></td>
         <!-- <td><%# company.our_company %></td> -->
         <td><%= link_to company.title , edit_company_path(company) %></td>

@@ -16,7 +16,20 @@ class Ability
       can [:create, :update, :copy, :delete], Kp
       # can :copy, Kp
       can :autocomplete_product_title, Kp
-      can [:print1, :print2, :print3], Kp
+      can [:print1, :print2, :print3, :print4], Kp
+      can [:file_import, :file_export], Kp
+      can :manage, Product
+      cannot :insales_import, Product
+      can :manage, Client
+      can :manage, Company
+    when 'grand_manager'
+      # can :read, :all
+      can [:read, :update], Order
+      cannot :download, Order
+      can [:create, :update, :copy, :delete], Kp
+      # can :copy, Kp
+      can :autocomplete_product_title, Kp
+      can [:print1, :print2, :print3, :print4], Kp
       can [:file_import, :file_export], Kp
       can :manage, Product
       cannot :insales_import, Product

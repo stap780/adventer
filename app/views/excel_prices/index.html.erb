@@ -49,7 +49,7 @@
 
   <tbody id="items_table" class="border-0">
     <% @excel_prices.each do |excel_price| %>
-      <tr>
+      <tr class="align-middle">
         <td><%= check_box_tag "excel_price_ids[]", excel_price.id %></td>
         <td><%= excel_price.title %></td>
         <td><%= excel_price.link %></td>

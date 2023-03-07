@@ -1,0 +1,19 @@
+wb = xlsx_package.workbook
+s = wb.styles
+header = s.add_style b: true, alignment: { horizontal: :center, vertical: :center  }
+center = s.add_style alignment: { horizontal: :center , vertical: :center }, border: Axlsx::STYLE_THIN_BORDER, b: true
+col = s.add_style alignment: { horizontal: :left , vertical: :center, indent: 1, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER, b: true
+
+wb.add_worksheet(name: "Счет") do |sheet|
+sheet.add_row ['', '', '', '', '','','']
+sheet.add_row ['', 'Дата '+@kp.created_at.strftime("%d / %m / %Y")]
+sheet.add_row ['', '', '', '', '','','']
+sheet.add_row ['', '№', 'товар', 'ед. изм.', 'цена (руб. без НДС)','кол-во','сумма (руб. без НДС)'], style: header
+@kp_products.each_with_index do |kp, i|
+sheet.add_row ['', i+1, kp[:title], 'шт', kp[:price],kp[:quantity],kp[:sum]], height: 30, style: [nil,center,col,center,center,center,center]
+end
+sheet.add_row ['', '', '', '', '','','']
+sheet.add_row ['', 'Итого '+(@kp.kp_products.sum(:sum).truncate(2).to_s("F") + "00")[ /.*\..{2}/ ]+' руб']
+
+sheet.column_widths 4,4,50,10,20,10,20,4
+end
