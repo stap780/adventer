@@ -72,8 +72,8 @@
               <td class="<%= kp_status_bg_color(kp.status)%>"><%= kp.status %></td>
               <td><%= kp.title %></td>
               <td><%= kp.created_at.strftime("%d.%m.%Y") %></td>
-              <td style="width:135px;"><%= kp.kp_products.count %></td>
-              <td><%= number_to_currency(kp.kp_products.sum(:sum), unit: '₽ ', delimiter: ' ', format: "%n %u") %></td>
+              <td><%= kp.kp_products.count %></td>
+              <td style="width:135px;"><%= number_to_currency(kp.kp_products.sum(:sum), unit: '₽ ', delimiter: ' ', format: "%n %u") %></td>
               <td><%= kp.comment %></td>
               <td><%= link_to '<span class="oi oi-pencil"></span>'.html_safe, edit_order_kp_path(@order, kp), title: 'Редактировать' %></td>
               <% if can? :copy, Kp %>
