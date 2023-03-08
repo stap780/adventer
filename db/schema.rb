@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_03_03_140933) do
+ActiveRecord::Schema.define(version: 2023_03_08_114554) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -100,6 +100,8 @@ ActiveRecord::Schema.define(version: 2023_03_03_140933) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "file_status"
+    t.boolean "rrc"
+    t.boolean "our_product"
   end
 
   create_table "homes", force: :cascade do |t|

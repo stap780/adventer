@@ -82,8 +82,14 @@
 
 		<table class="signs">
 			<tr>
-				<td>
-				М П
+				<td class="wrapper-notice">
+				<div class="notice-stamp">М П
+					<% if current_user.grand_manager?%>
+					<% image = @our_company.images.first %>
+					<% link = image.present? ? "/tmp"+wicked_image_active_storage_workaround(image).to_s.split('/tmp').last : '' %>
+					<%= render "pdf_image", image_link: link, image_class: 'pechat' if image.present? %>
+					<% end %>
+				</div>
 				</td>
 			</tr>
 		</table>

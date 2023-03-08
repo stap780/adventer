@@ -12,6 +12,8 @@
     <%= f.input :price_shift, label: 'Число', type: "number", wrapper_html: { class: 'col-auto' } %>
     <%= f.input :price_points, label: 'Тип',  collection: [['%','percents'], ['ед.','fixed']], include_blank: false, input_html: { class: 'form-select' }, wrapper_html: { class: 'col-auto' } %>
     <%= f.input :comment, label: 'Комментарий' %>    
+    <%= f.input :rrc, label: 'Вкл цену РРЦ' %>
+    <%= f.input :our_product, label: 'Только наши товары' %>
     </div>
 </div>
   <div class="row">

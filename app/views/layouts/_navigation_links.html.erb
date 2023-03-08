@@ -14,7 +14,9 @@
 <% if can? :index , Product %>
 <li class="nav-item <%= 'active' if current_page?(products_path) %>'"><%= link_to 'Товары', products_path, class: 'nav-link' %></li>
 <% end %>
+<% if can? :index , ExcelPrice %>
 <li class="nav-item <%= 'active' if current_page?(excel_prices_path) %>'"><%= link_to 'Excel', excel_prices_path, class: 'nav-link' %></li>
+<% end %>
 <% if can? :index , User %>
 <li class="nav-item dropdown">
   <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-bs-toggle="dropdown">Настройки</a>

@@ -101,6 +101,6 @@ class ExcelPricesController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def excel_price_params
-      params.require(:excel_price).permit(:title, :link, :price_move, :price_shift, :price_points, :comment, :file_status)
+      params.require(:excel_price).permit(:title, :link, :price_move, :price_shift, :price_points, :comment, :file_status, :rrc, :our_product)
     end
 end

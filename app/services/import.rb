@@ -126,8 +126,11 @@ class Services::Import
     notice_main_label = s.add_style bg_color: 'FFFFFF', alignment: { horizontal: :center , vertical: :top }
     notice_label = s.add_style bg_color: 'FDE9D9', alignment: { horizontal: :center , vertical: :center}, b: true, sz: 12
     notice_b = s.add_style bg_color: 'FDE9D9', alignment: { horizontal: :center , vertical: :center }, sz: 12
-
-    pr_style = [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money]
+    if excel_price.rrc == true
+      pr_style = [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money,money]
+    else
+      pr_style = [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money]
+    end
     # end style section
 
     start_array_string = {0=>'B6',1=>'D6',2=>'F6',3=>'H6',4=>'B8',5=>'D8',6=>'F8',7=>'H8',8=>'B10',9=>'D10',10=>'F10',11=>'H10'}
@@ -210,17 +213,31 @@ class Services::Import
         second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
         if second_cats.present?
           second_cats.each do |s_cat|
-            cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(s_cat[:id]).take(15) :
-                                                      Services::Import.collect_product_ids(s_cat[:id])
-            if cat_products.present?
+            if excel_price.our_product == true
+              cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(cat[:id]).take(15) :
+              Services::Import.collect_our_product_ids(cat[:id])
+            else
+              cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(15) :
+                                                      Services::Import.collect_product_ids(cat[:id])
+            end
+              if cat_products.present?
               cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
               row_index_for_titles_array.push(cat_title_row.row_index+1)
-              sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20                  
-              cat_products.each_with_index do |pr_id, index|
+              if excel_price.rrc == true
+                sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой 20%','Цена РРЦ'], style: tbl_header, height: 20
+              else
+                sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
+              end
+                cat_products.each_with_index do |pr_id, index|
                 pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
                 if pr.present?
                   data = Services::Import.collect_product_data_from_xml(pr,excel_price)
-                  pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                  if excel_price.rrc == true
+                    discount = data[:price]-data[:price]*0.2
+                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
+                  else
+                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                  end
                   pr_row = sheet.add_row pr_data, style: pr_style, height: 150
                   hyp_ref = "D#{(pr_row.row_index+1).to_s}"
                   sheet.add_hyperlink location: data[:url], ref: hyp_ref
@@ -236,18 +253,31 @@ class Services::Import
           end
         end
         if !second_cats.present?
-          cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(15) :
+          if excel_price.our_product == true
+            cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(cat[:id]).take(15) :
+            Services::Import.collect_our_product_ids(cat[:id])
+          else
+            cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(15) :
                                                     Services::Import.collect_product_ids(cat[:id])
+          end
           if cat_products.present?
             cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
             row_index_for_titles_array.push(cat_title_row.row_index+1)
-            sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
+            if excel_price.rrc == true
+              sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой 20%','Цена РРЦ'], style: tbl_header, height: 20
+            else
+              sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
+            end
             cat_products.each_with_index do |pr_id, index|
               pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
               if pr.present?
                   data = Services::Import.collect_product_data_from_xml(pr,excel_price)
-
-                  pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                  if excel_price.rrc == true
+                    discount = data[:price]-data[:price]*0.2
+                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
+                  else
+                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                  end
                   #puts pr_data.to_s if pr['id'] == '139020547'
                   pr_row = sheet.add_row pr_data, style: pr_style, height: 150
                   # puts "pr_row.row_index - "+pr_row.row_index.to_s
@@ -267,12 +297,25 @@ class Services::Import
         end
 
         sheet.merge_cells("B1:C1")
-        sheet.merge_cells("D1:G1")
-        sheet.merge_cells("B2:G2")
+        if excel_price.rrc == true
+          sheet.merge_cells("D1:H1")
+          sheet.merge_cells("B2:H2")
+        else
+          sheet.merge_cells("D1:G1")
+          sheet.merge_cells("B2:G2")
+        end
         sheet.add_hyperlink( location: "'Навигация по каталогу'!A7", target: :sheet, ref: 'B1' )
-        sheet.column_widths 2,10,25,40,40,40,40,2
+        if excel_price.rrc == true
+        sheet.column_widths 2,10,25,40,40,40,30,30,2
+        else
+        sheet.column_widths 2,10,25,40,40,40,30,2
+        end
         puts "row_index_for_titles_array => "+row_index_for_titles_array.to_s
-        merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
+        if excel_price.rrc == true
+        merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"H"+a.to_s }
+        else
+          merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
+        end
         merge_ranges.uniq.each { |range| sheet.merge_cells(range) }
         sheet.sheet_view.pane do |pane|
           pane.state = :frozen
@@ -320,35 +363,6 @@ class Services::Import
     StringIO.new(response.body)
   end
 
-  # def self.load_convert_image(image_link, file_name)
-  #   input_path = image_link.present? ? image_link : "http://157.245.114.19/kp_logo_footer.png"
-  #   RestClient.get( input_path ) { |response, request, result, &block|
-  #     case response.code
-  #     when 200
-  #       ##### this code for production because simple way (standart load file) not work and have problem with minimagick convert
-  #       temp_filename = "temp_"+file_name+"."+input_path.split('.').last
-  #       # download = open(input_path)
-  #       download_path = Services::Import::DownloadPath+"/public/excel_price/"+temp_filename
-  #       # IO.copy_stream(download, download_path)
-  #       f = File.new(download_path, "wb")
-  #       f << response.body
-  #       f.close
-  #       new_image_link = Rails.env.development? ? "http://localhost:3000/excel_price/"+temp_filename : "http://157.245.114.19/excel_price/"+temp_filename
-  #       image = Services::Import.process_image(new_image_link, file_name)
-  #     when 400
-  #       puts "image have 400 response"
-  #       link = "http://157.245.114.19/kp_logo_footer.png"
-  #       image = Services::Import.process_image(link, file_name)
-  #     when 404
-  #       puts "image have 404 response"
-  #       link = "http://157.245.114.19/kp_logo_footer.png"
-  #       image = Services::Import.process_image(link, file_name)
-  #     else
-  #       response.return!(&block)
-  #     end
-  #     }
-  # end
-
   def self.collect_product_data_from_xml(pr, excel_price)
     picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
     data = {
@@ -388,6 +402,20 @@ class Services::Import
 
   def self.collect_product_ids(cat_id)
     pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
+  end
+
+  def self.collect_our_product_ids(cat_id)
+    all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
+    pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
+    new_pr_ids = []
+    pr_ids.each do |pr_id|
+      pr = all_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
+                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('ФД') ||
+                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('АДВ')
+                                                      }[0]
+      new_pr_ids.push(pr['id']) if !pr.nil?
+    end
+    new_pr_ids
   end
 
   def self.load_all_catalog_xml
