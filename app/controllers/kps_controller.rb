@@ -2,7 +2,7 @@ class KpsController < ApplicationController
   before_action :authenticate_user!
   authorize_resource
   before_action :get_order
-  before_action :set_kp, only: %i[show edit update destroy print1 print2 print3 print4]
+  before_action :set_kp, only: %i[show edit update destroy print1 print2 print3 print4 print1c]
   # autocomplete :product, :title, :extra_data => [:id, :title, :sku, :price, :desc], :display_value => :autocomplete_title, 'data-noMatchesLabel' => 'нет товара'
 
   # GET /kps
@@ -262,6 +262,32 @@ class KpsController < ApplicationController
         format.html
         format.xlsx {
           response.headers['Content-Disposition'] = 'attachment; filename="print4.xlsx"'
+        }
+      end
+  
+  end
+
+  def print1c
+      @kp_products_data = []
+      @kp.kp_products.each do |kp|
+        data = {
+                sku: kp.product.sku,
+                # image_url: rails_representation_url(kp.product.images.first.variant(combine_options: {auto_orient: true, thumbnail: '40x40', gravity: 'center', extent: '40x40' }).processed, only_path: true),
+                image_url: kp.product.images.first,
+                title: kp.product.title,
+                price: kp.price,
+                desc: kp.desc,
+                quantity: kp.quantity,
+                sum: (kp.sum.truncate(2).to_s("F") + "00")[ /.*\..{2}/ ]
+              }
+        @kp_products_data << data
+      end
+      @kp_products = params[:type] == "random" ? @kp_products_data.sort_by{ |hsh| hsh[:price] } : @kp_products_data
+      #puts @kp_products.count
+      respond_to do |format|
+        format.html
+        format.xlsx {
+          response.headers['Content-Disposition'] = 'attachment; filename="print1c.xlsx"'
         }
       end
   

@@ -1,0 +1,67 @@
+wb = xlsx_package.workbook
+s = wb.styles
+header = s.add_style b: true, alignment: { horizontal: :center, vertical: :center, wrap_text: true  }
+center = s.add_style alignment: { horizontal: :center , vertical: :center, wrap_text: true  }, border: Axlsx::STYLE_THIN_BORDER, b: true
+col = s.add_style alignment: { horizontal: :left , vertical: :center, indent: 1, wrap_text: true }, border: Axlsx::STYLE_THIN_BORDER, b: true
+
+wb.add_worksheet(name: "Счет") do |sheet|
+sheet.add_row ['', '', '', '', '','','', '', '', '', '','','']
+sheet.add_row ['', '', '', '', '','','', '', '', '', '','','']
+sheet.add_row ['', '', '', '', '','','', '', '', '', '','','']
+sheet.add_row ['', 'Артикул', 'Описание', 'Наименование', 'Ед.измерения','Кол-во','Цена за ед.','Категория','В группе','Направление деятельности','Способ списания','Способ пополнения'], style: header
+
+@kp_products.each_with_index do |kp, i|
+pr_row = sheet.add_row ['', kp[:sku], kp[:desc], kp[:title], '',kp[:quantity], kp[:price],'', '', '','FIFO',''], height: 30, style: [nil,center,center,center,center,center,center,center,center,center,center,center]
+ind = pr_row.row_index+1
+sheet.add_data_validation("H#{ind}:H#{ind}", 
+    type: :list,
+    formula1: '"Продукция, Товар, Услуги"',
+    showErrorMessage: true,
+    errorTitle: '',
+    error: 'Доступны значения: Продукция, Товар, Услуги',
+    errorStyle: :stop,
+    showInputMessage: true,
+    promptTitle: '',
+    prompt: 'Выберите категорию:')
+    
+sheet.add_data_validation("I#{ind}:I#{ind}", 
+    type: :list,
+    formula1: '"Артикульная продукция, Товар, Услуги, Продукция"',
+    showErrorMessage: true,
+    errorTitle: '',
+    error: 'Доступны значения: Артикульная продукция, Товар, Услуги, Продукция',
+    errorStyle: :stop,
+    showInputMessage: true,
+    promptTitle: '',
+    prompt: 'Выберите В группе:')
+
+sheet.add_data_validation("J#{ind}:J#{ind}", 
+    type: :list,
+    formula1: '"Производство мебели, Прочее производство, Основное направление, Услуги, Прочее производство или Производство мебели"',
+    showErrorMessage: true,
+    errorTitle: '',
+    error: 'Доступны значения: Производство мебели, Прочее производство, Основное направление, Услуги, Прочее производство или Производство мебели',
+    errorStyle: :stop,
+    showInputMessage: true,
+    promptTitle: '',
+    prompt: 'Выберите Направление деятельности:')
+
+sheet.add_data_validation("L#{ind}:L#{ind}", 
+    type: :list,
+    formula1: '"Производство, Закупка"',
+    showErrorMessage: true,
+    errorTitle: '',
+    error: 'Доступны значения: Производство, Закупка',
+    errorStyle: :stop,
+    showInputMessage: true,
+    promptTitle: '',
+    prompt: 'Выберите Способ пополнения:')
+
+end
+
+sheet.add_row ['', '', '', '', '','','', '', '', '', '','','']
+sheet.add_row ['', 'Итого '+(@kp.kp_products.sum(:sum).truncate(2).to_s("F") + "00")[ /.*\..{2}/ ]+' руб']
+
+sheet.column_widths 4,10,20,22,20,10,20,20,20,22,20,20,4
+
+end

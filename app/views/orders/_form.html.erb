@@ -63,6 +63,7 @@
                 <% colspan_integer.push(1) if can? :update, Kp %>
             <%end%>
           <th <%= colspan_integer %> colspan="<%= colspan_integer.sum %>"></th>
+          <th></th>
           </tr>
         </thead>
         <tbody>
@@ -90,6 +91,7 @@
                   <%= link_to 'Пустое (xlsx)', print4_order_kps_path(@order, kp, :format => :xlsx), { class: 'dropdown-item' } %>
                 </div>
               </td>
+              <td><%= link_to '1C (xlsx)', print1c_order_kps_path(@order, kp, :format => :xlsx), { class: 'btn btn-outline-info btn-sm' } %></td>
               <% if current_user.admin? %>
               <td><%= link_to '<span class="oi oi-trash"></span>'.html_safe, [@order, kp], method: :delete, data: { confirm: 'Are you sure?' } %></td>
               <% end %>
