@@ -55,14 +55,6 @@
             <th>Кол-во поз</th>
             <th>Сумма</th>
             <th>Комментарий</th>
-            <% colspan_integer = [1]%>
-            <% if current_user.admin? %>
-              <% colspan_integer.push(3)%>
-            <%else%>
-                <% colspan_integer.push(1) if can? :copy, Kp %>
-                <% colspan_integer.push(1) if can? :update, Kp %>
-            <%end%>
-          <th <%= colspan_integer %> colspan="<%= colspan_integer.sum %>"></th>
           <th></th>
           </tr>
         </thead>
@@ -76,25 +68,25 @@
               <td><%= kp.kp_products.count %></td>
               <td style="width:135px;"><%= number_to_currency(kp.kp_products.sum(:sum), unit: '₽ ', delimiter: ' ', format: "%n %u") %></td>
               <td><%= kp.comment %></td>
-              <td><%= link_to '<span class="oi oi-pencil"></span>'.html_safe, edit_order_kp_path(@order, kp), title: 'Редактировать' %></td>
-              <% if can? :copy, Kp %>
-              <td><%= link_to '<span class="oi oi-file"></span>'.html_safe, copy_order_kps_path(@order, kp), title: 'Копировать' %></td>
-              <% end %>
-              <td class="nav-item dropdown">
-                <a class="dropdown-toggle" href="#" id="print_navbardrop" data-bs-toggle="dropdown"><i class="oi oi-print"></i></a>
-                <div class="dropdown-menu">
-                  <%= link_to @order.companykp1.title, print1_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
-                  <%= link_to @order.companykp2.title, print2_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
-                  <%= link_to @order.companykp2.title+" ранд", print2_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
-                  <%= link_to 'КП3', print3_order_kps_path(@order, kp, :format => :pdf), {class: 'dropdown-item', target: '_blank'} %>
-                  <%= link_to "КП3 ранд", print3_order_kps_path(@order, kp, :format => :pdf, type: 'random'), {class: 'dropdown-item', target: '_blank'} %>
-                  <%= link_to 'Пустое (xlsx)', print4_order_kps_path(@order, kp, :format => :xlsx), { class: 'dropdown-item' } %>
+              <td>
+              <div class="btn-group text-center align-items-center" role="group" aria-label="">
+                <%= link_to 'Редактировать', edit_order_kp_path(@order, kp), title: 'Редактировать', class: 'btn btn-outline-secondary btn-sm' %>
+                <%= link_to 'Копировать', copy_order_kps_path(@order, kp), title: 'Копировать', class: 'btn btn-outline-secondary btn-sm' if can? :copy, Kp %>
+                <div class="btn-group" role="group">
+                  <button id="dropdownId" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Печать</button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownId">
+                  <%= link_to @order.companykp1.title, print1_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
+                  <%= link_to @order.companykp2.title, print2_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
+                  <%= link_to @order.companykp2.title+" ранд", print2_order_kps_path(@order, kp, :format => :pdf, type: 'random'), class: 'dropdown-item', target: '_blank' %>
+                  <%= link_to 'КП3', print3_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
+                  <%= link_to "КП3 ранд", print3_order_kps_path(@order, kp, :format => :pdf, type: 'random'), class: 'dropdown-item', target: '_blank' %>
+                  <%= link_to 'Пустое (xlsx)', print4_order_kps_path(@order, kp, :format => :xlsx), class: 'dropdown-item' %>
+                  </div>
                 </div>
+                <%= link_to '1C (xlsx)', print1c_order_kps_path(@order, kp, :format => :xlsx), class: 'btn btn-outline-secondary btn-sm' %>
+                <%= link_to '<span class="oi oi-trash"></span>'.html_safe, [@order, kp], method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-dark btn-sm' if current_user.admin?%>
+              </div>
               </td>
-              <td><%= link_to '1C (xlsx)', print1c_order_kps_path(@order, kp, :format => :xlsx), { class: 'btn btn-outline-info btn-sm' } %></td>
-              <% if current_user.admin? %>
-              <td><%= link_to '<span class="oi oi-trash"></span>'.html_safe, [@order, kp], method: :delete, data: { confirm: 'Are you sure?' } %></td>
-              <% end %>
             </tr>
           <% end %>
         </tbody>

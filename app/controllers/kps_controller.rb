@@ -270,15 +270,59 @@ class KpsController < ApplicationController
   def print1c
       @kp_products_data = []
       @kp.kp_products.each do |kp|
+        sku = kp.product.sku.present? ? kp.product.sku : nil
+        title = kp.product.title
+        if !sku.nil? && sku.include?('ФД')
+          cat = "Продукция"
+          group = "Артикульная продукция"
+          type = "Производство мебели"
+          ss = "FIFO"
+          sposob = "Производство"
+        end
+        if !sku.nil? && sku.include?('АДВ')
+          cat = "Продукция"
+          group = "Артикульная продукция"
+          type = "Прочее производство"
+          ss = "FIFO"
+          sposob = "Производство"
+        end
+        if !sku.include?('ФД') && !sku.include?('АДВ') && !sku.nil?
+          cat = "Товар"
+          group = "Товар"
+          type = "Основное направление"
+          ss = "FIFO"
+          sposob = "Закупка"
+        end
+        if sku.nil? && title.include?('доставка') && title.include?('монтаж') && title.include?('сборка')
+          cat = "Услуги"
+          group = "Услуги"
+          type = "Услуги"
+          ss = "FIFO"
+          sposob = "Закупка"
+        end
+        if sku.nil? && !title.include?('доставка') && !title.include?('монтаж') && !title.include?('сборка')
+          cat = "Продукция"
+          group = "Продукция"
+          type = "Прочее производство или Производство мебели"
+          ss = ""
+          sposob = "Производство"
+        end
+
+  
         data = {
-                sku: kp.product.sku,
+                sku: sku,
                 # image_url: rails_representation_url(kp.product.images.first.variant(combine_options: {auto_orient: true, thumbnail: '40x40', gravity: 'center', extent: '40x40' }).processed, only_path: true),
                 image_url: kp.product.images.first,
-                title: kp.product.title,
+                title: title,
                 price: kp.price,
                 desc: kp.desc,
                 quantity: kp.quantity,
-                sum: (kp.sum.truncate(2).to_s("F") + "00")[ /.*\..{2}/ ]
+                sum: (kp.sum.truncate(2).to_s("F") + "00")[ /.*\..{2}/ ],
+                cat: cat,
+                group: group,
+                type: type,
+                ss: ss,
+                sposob: sposob
               }
         @kp_products_data << data
       end
