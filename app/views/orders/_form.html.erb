@@ -33,7 +33,7 @@
     <%# f.input :company_id, as: :hidden %>
     <%# f.association :companykp1, label: 'Компания КП1', collection: Company.our, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
     <%# f.association :companykp2, label: 'Компания КП2', collection: Company.our, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
-    <%= f.association :companykp3, label: 'Компания КП3', collection: Company.our, prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
+    <%= f.association :companykp3, label: 'Компания КП3', collection: Company.our.offset(2), prompt: false, include_blank: true, input_html: { class: "form-select" }, wrapper_html: { class: "col-2" } %>
   </div>
   <div class="col-12 row align-content-start align-items-center">
     <% if @order.new_record? %>
@@ -83,7 +83,7 @@
                   <%= link_to 'Пустое (xlsx)', print4_order_kps_path(@order, kp, :format => :xlsx), class: 'dropdown-item' %>
                   </div>
                 </div>
-                <%= link_to '1C (xlsx)', print1c_order_kps_path(@order, kp, :format => :xlsx), class: 'btn btn-outline-secondary btn-sm' %>
+                <%= link_to '1C(xlsx)', print1c_order_kps_path(@order, kp, :format => :xlsx), class: 'btn btn-outline-secondary btn-sm' %>
                 <%= link_to '<span class="oi oi-trash"></span>'.html_safe, [@order, kp], method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-dark btn-sm' if current_user.admin?%>
               </div>
               </td>

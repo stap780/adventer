@@ -70,7 +70,7 @@ class Kp < ApplicationRecord
     # else
     #   self.title = "Коммерческое предложение "+self.order_id.to_s+"/"+self.order.kps.count.to_s if new_record?
     # end
-    self.title = "Коммерческое предложение" if new_record?
+    self.title = "" if new_record? #"Коммерческое предложение" if new_record?
   end
 
   def check_status_if_manager_set_print_ready

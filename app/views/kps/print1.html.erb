@@ -37,7 +37,8 @@
 
       <div class="kp-title">
         <center>
-          <h1><% if @kp.title.present? %><%= @kp.title%><%else%>КП № <%= current_user.id%>-<%= @kp.id %><% end %>  от <%= @kp.created_at.strftime("%d / %m / %Y")%></h1>
+          <h1><% if @kp.title.present? %>Коммерческое предложение<%else%>КП № <%= current_user.id%>-<%= @kp.id %><% end %></h1><br>
+          <h3><%= @kp.title%></h3>
         </center>
       </div>
 
