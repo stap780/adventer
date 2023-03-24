@@ -43,6 +43,7 @@ class Ability
       cannot :download, Order
       can :index_all, Kp
       can :update, Kp
+      can [:print1, :print2, :print3, :print4], Kp
       cannot :create, Kp
       cannot :copy, Kp
     else
