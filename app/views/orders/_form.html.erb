@@ -78,17 +78,17 @@
                   <%= link_to @order.companykp1.title, print1_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
                   <%= link_to @order.companykp2.title, print2_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
                   <%= link_to @order.companykp2.title+" с печатью", print2_order_kps_path(@order, kp, :format => :pdf, type: 'stamp'), 
-                                                        class: 'dropdown-item', target: '_blank' if current_user.grand_manager? && if current_user.admin?%>
+                                                        class: 'dropdown-item', target: '_blank' if current_user.grand_manager? || current_user.admin?%>
                   <%= link_to @order.companykp2.title+" ранд", print2_order_kps_path(@order, kp, :format => :pdf, type: 'random'), class: 'dropdown-item', target: '_blank' %>
                   <%= link_to 'КП3', print3_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
                   <%= link_to 'КП3 с печатью', print3_order_kps_path(@order, kp, :format => :pdf, type: 'stamp'), 
-                                                        class: 'dropdown-item', target: '_blank' if current_user.grand_manager? && if current_user.admin? %>
+                                                        class: 'dropdown-item', target: '_blank' if current_user.grand_manager? || current_user.admin? %>
                   <%= link_to "КП3 ранд", print3_order_kps_path(@order, kp, :format => :pdf, type: 'random'), class: 'dropdown-item', target: '_blank' %>
                   <%= link_to 'Пустое (xlsx)', print4_order_kps_path(@order, kp, :format => :xlsx), class: 'dropdown-item' %>
                   </div>
                 </div>
                 <%= link_to '1C(xlsx)', print1c_order_kps_path(@order, kp, :format => :xlsx), class: 'btn btn-outline-secondary btn-sm' %>
-                <%= link_to '<span class="oi oi-trash"></span>'.html_safe, [@order, kp], method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-dark btn-sm' if current_user.admin? && current_user.manager? && current_user.grand_manager?%>
+                <%= link_to '<span class="oi oi-trash"></span>'.html_safe, [@order, kp], method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-dark btn-sm' if current_user.admin? || current_user.manager? || current_user.grand_manager?%>
               </div>
               </td>
             </tr>
