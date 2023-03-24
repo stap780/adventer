@@ -1,6 +1,5 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
-  authorize_resource
   before_action :set_user, only: [:show, :edit, :update, :destroy]
 
   def index
@@ -20,12 +19,8 @@ class UsersController < ApplicationController
 
   # PATCH/PUT /users/1 or /users/1.json
   def update
-    # @user = User.find(params[:id])
-    # puts "params - "+params.to_s
-    # puts "params[:user][:avatar] - "+params[:user][:avatar].to_s
     @user.avatar.attach(params[:user][:avatar]) if params[:user][:avatar]
     respond_to do |format|
-      #if @user.update(name: params[:user][:name], email: params[:user][:email], role_id: params[:user][:role_id])
       if @user.update(user_params)
         format.html { redirect_to users_url, notice: "User was successfully updated." }
         format.json { render :show, status: :ok, location: @user }

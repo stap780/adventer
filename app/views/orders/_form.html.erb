@@ -77,8 +77,12 @@
                   <div class="dropdown-menu" aria-labelledby="dropdownId">
                   <%= link_to @order.companykp1.title, print1_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
                   <%= link_to @order.companykp2.title, print2_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
+                  <%= link_to @order.companykp2.title+" с печатью", print2_order_kps_path(@order, kp, :format => :pdf, type: 'stamp'), 
+                                                        class: 'dropdown-item', target: '_blank' if current_user.grand_manager? && if current_user.admin?%>
                   <%= link_to @order.companykp2.title+" ранд", print2_order_kps_path(@order, kp, :format => :pdf, type: 'random'), class: 'dropdown-item', target: '_blank' %>
                   <%= link_to 'КП3', print3_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
+                  <%= link_to 'КП3 с печатью', print3_order_kps_path(@order, kp, :format => :pdf, type: 'stamp'), 
+                                                        class: 'dropdown-item', target: '_blank' if current_user.grand_manager? && if current_user.admin? %>
                   <%= link_to "КП3 ранд", print3_order_kps_path(@order, kp, :format => :pdf, type: 'random'), class: 'dropdown-item', target: '_blank' %>
                   <%= link_to 'Пустое (xlsx)', print4_order_kps_path(@order, kp, :format => :xlsx), class: 'dropdown-item' %>
                   </div>

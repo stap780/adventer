@@ -150,6 +150,7 @@ class KpsController < ApplicationController
               }
         @kp_products_data << data
       end
+      @stamp = params[:type] == "stamp" ? true : false
       @kp_products = params[:type] == "random" ? @kp_products_data.sort_by{ |hsh| hsh[:price] } : @kp_products_data
 
       # puts @kp_products_data
@@ -205,6 +206,7 @@ class KpsController < ApplicationController
               }
         @kp_products_data << data
       end
+      @stamp = params[:type] == "stamp" ? true : false
       @kp_products = params[:type] == "random" ? @kp_products_data.sort_by{ |hsh| hsh[:sku] } : @kp_products_data
 
       respond_to do |format|
