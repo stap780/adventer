@@ -31,31 +31,86 @@ function calculate(val) {
   }
 };
 
-//автокомплит init после вставки строки
-function initLine() {
-  var idNode;
-  //alert('hi');
-  $("#kp_products")
-    .on('cocoon:before-insert', function(e, insertedItem) {
-      var row = insertedItem;
-      //console.log(row.find.attr('id'));
-      //console.log("function initLine row - "+row);
-      idNode = row.children('td').children([0]).children([0]).attr('id');
-      // console.log("function initLine idNode - "+idNode);
-    })
-    .on('cocoon:after-insert', function(e, insertedItem) {
-      console.log(idNode);
-       console.log(insertedItem);
-      $("input[id = '" + idNode.replace("product_title", "quantity") + "']").val("0");
-      $("input[id = '" + idNode.replace("product_title", "price") + "']").val("0");
-      calculate();
-    });
+
+//создаём товар кп после добавления строки чтобы можно было потом редактировать описание
+function create_kp_product(node_index) {
+  //console.log("edit_kp create_kp_product",$('.edit_kp'));
+  var kp_id = $('.edit_kp').attr('id').split("_").pop();
+  $.ajax({
+    type: "POST",
+    url: '/kp_products',
+    data: { kp_product: { kp_id: kp_id, desc: '', quantity: 0, price: 0 } },
+    success: function(data){
+      //console.log('success => ', data);
+      var kp_pr_id = data.id;
+      $("#kp_products tbody").append('<input type="hidden" value="'+kp_pr_id+'" name="kp[kp_products_attributes]['+node_index+'][id]" id="kp_kp_products_attributes_'+node_index+'_id">')
+      $("td#desc-wrap- a").attr("href", "/kp_products/"+kp_pr_id+"/update_modal");
+      $("td#desc-wrap-").attr("id", "desc-wrap-"+kp_pr_id);
+    }
+  });
 }
+
+//обновляем товар кп после автовыбора чтобы можно было потом редактировать описание
+function update_kp_product(kp_id, product_id) {
+  //console.log("edit_kp create_kp_product",$('.edit_kp'));
+  $.ajax({
+    type: "PUT",
+    url: '/kp_products/'+kp_id,
+    data: { kp_product: { product_id: product_id } },
+    success: function(data){
+      console.log('success update_kp_product => ', data);
+    }
+  });
+}
+//удаляем товар кп
+function delete_kp_product( kp_id ) {
+  //console.log("edit_kp create_kp_product",$('.edit_kp'));
+  $.ajax({
+    type: "DELETE",
+    url: '/kp_products/'+kp_id,
+    success: function(data){
+      console.log('success delete_kp_product ', data);
+    }
+  });
+}
+
+// //автокомплит init после вставки строки
+// function initLine() {
+//   var idNode;
+
+//   $("#kp_products")
+//     .on('cocoon:before-insert', function(e, insertedItem) {
+//       var row = insertedItem;
+//       //console.log(row.find.attr('id'));
+//       //console.log("function initLine row - "+row);
+//       idNode = row.children('td').children([0]).children([0]).attr('id');
+//       // console.log("function initLine idNode - "+idNode);
+//     })
+//     .on('cocoon:after-insert', function(e, insertedItem) {
+//       //console.log("idNode => ",idNode);
+//       console.log('============================');
+//       console.log("insertedItem => ", insertedItem);
+//       $("input[id = '" + idNode.replace("product_title", "quantity") + "']").val("0");
+//       $("input[id = '" + idNode.replace("product_title", "price") + "']").val("0");
+      
+//       var node_index = idNode.replace("kp_kp_products_attributes_", "").replace("_product_title", "")
+//       var check_input_present = $('input#kp_kp_products_attributes_'+node_index+'_id');
+//       console.log('check_input_present.length', check_input_present.length);
+//       if (check_input_present.length ) {
+//         console.log('уже вставилась строка ране');
+//         console.log('нажимается несколько раз автоматом');
+//       } else {
+//         create_kp_product(node_index);
+//       }
+      
+//       calculate();
+//     });
+// }
 
 // убираем значение id продукта пока не выберем следующий продукт
 function getId(val) {
   var idNode = val;
-  // console.log("function getId idNode - "+idNode);
+   console.log("function getId idNode - "+idNode);
   $("input[id = '" + idNode.replace("product_title", "product_id") + "']").val('');
 }
 
@@ -64,8 +119,8 @@ function productAutocomplete(val){
   var idNode = val;
   $("input[id = '" + idNode + "']").bind('railsAutocomplete.select', function(event, data) {
     // console.log($(this).attr('id'));
-    // console.log(event);
-    console.log(data);
+    // console.log(idNode);
+    console.log('railsAutocomplete.select => ', data);
 
     /* проставляем значения id продукта, кол-во продукта, цена продукта - если выберем продукт из списка продуктов  */
     var dataTitle = data.item.title;
@@ -78,17 +133,53 @@ function productAutocomplete(val){
     $("input[id = '" + idNode.replace("product_title", "quantity") + "']").val("1");
     $("input[id = '" + idNode.replace("product_title", "price") + "']").val(dataPrice);
     $("[id = '" + idNode.replace("product_title", "desc") + "']").val(dataDesc);
+    console.log( 'productAutocomplete tr => ', $(this).closest('tr') );
+    $(this).closest('tr').find(".desc").text(dataDesc.slice(0, 15) + '...');
+    $(this).closest('tr').find(".desc").data('bsContent', dataDesc);
     $("[id = '" + idNode.replace("product_title", "sku") + "']").val(dataSku);
+    var input = $("input[id = '" + idNode.replace("product_title", "id") + "']")
+    var kp_id = $("input[id = '" + idNode.replace("product_title", "id") + "']").val();//$(this).closest('tr').attr('id').replace("nested-fields-", "");
+    console.log('kp_id', kp_id);
+    update_kp_product(kp_id, dataId);
+
     calculate();
   });
 }
 
 $(document).ready(function() {
+
+  //productAutocomplete();
   calculate();
+//автокомплит init после вставки строки
+
+  $("#kp_products")
+    .on('cocoon:before-insert', function(e, insertedItem) {
+      var row = insertedItem;
+      //console.log(row.find.attr('id'));
+      //console.log("function initLine row - "+row);
+      idNode = row.children('td').children([0]).children([0]).attr('id');
+      // console.log("function initLine idNode - "+idNode);
+    })
+    .on('cocoon:after-insert', function(e, insertedItem) {
+      // console.log('============================');
+      // console.log("insertedItem => ", insertedItem);
+      $("input[id = '" + idNode.replace("product_title", "quantity") + "']").val("0");
+      $("input[id = '" + idNode.replace("product_title", "price") + "']").val("0");
+      
+      var node_index = idNode.replace("kp_kp_products_attributes_", "").replace("_product_title", "")
+      //var check_input_present = $('input#kp_kp_products_attributes_'+node_index+'_id');
+      create_kp_product(node_index);
+      
+      calculate();
+    });
+
 
   // пересчет суммы при удалении позиции из перечня товаров в исходящем счете
   $("#kp_products").children('tbody')
     .on('cocoon:before-remove', function(e, task) {
+      // console.log( 'before-remove tr => ', $(this).closest('tr') );
+      // console.log( 'before-remove tr context.firstElementChild => ', $(this).closest('tr').context.firstElementChild.dataset   );
+      // var kp_id = $(this).closest('tr').context.firstElementChild.dataset.kpPId;
       $(this).data('remove-timeout', 1000);
       task.fadeOut('slow');
     })
@@ -121,3 +212,4 @@ $(document).ready(function() {
   });
 
 });
+

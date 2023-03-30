@@ -9,7 +9,13 @@ Rails.application.routes.draw do
       get :get_full_catalog
     end
   end
-  resources :kp_products
+  resources :kp_products do
+    member do
+      put :update_by_bip
+      get :update_modal
+      patch :update_by_js
+  end
+  end
   get 'kps', to: 'kps#index_all'
   resources :orders do
     resources :kps do

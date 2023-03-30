@@ -303,3 +303,10 @@ section {
     padding: 0.3rem;
     border-bottom-width: 0px;
 }
+.best_in_place {
+  cursor: pointer;
+}
+.best_in_place:hover {
+    border: 1px dotted blue;
+    padding: 0px 5px;
+}

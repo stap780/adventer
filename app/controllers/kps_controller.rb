@@ -389,6 +389,6 @@ class KpsController < ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def kp_params
-    params.require(:kp).permit(:vid, :status, :title, :order_id, :extra, :comment, kp_products_attributes:[:id,:quantity,:price,:sum,:product_id, :desc, :sku,:_destroy])
+    params.require(:kp).permit(:vid, :status, :title, :order_id, :extra, :comment, kp_products_attributes:[:id, :kp_id,:quantity,:price,:sum,:product_id, :desc, :sku,:_destroy])
   end
 end

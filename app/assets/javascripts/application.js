@@ -14,6 +14,7 @@
 //= require jquery
 //= require jquery_ujs
 //= require jquery-ui/widgets/autocomplete
+//= require best_in_place
 //= require autocomplete-rails
 //= require popper
 //= require bootstrap
@@ -22,6 +23,29 @@
 
 
 $(document).ready(function() {
+  $(".best_in_place").best_in_place();
+  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+  const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+
+
+  const editModal = document.getElementById('modal-edit')
+  editModal.addEventListener('show.bs.modal', event => {
+    // Button that triggered the modal
+    const button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    const recipient = button.getAttribute('data-bs-whatever')
+    // If necessary, you could initiate an AJAX request here
+    // and then do the updating in a callback.
+    //
+    // Update the modal's content.
+    const modalTitle = editModal.querySelector('.modal-title')
+    //const modalBodyInput = exampleModal.querySelector('.modal-body input')
+  
+    modalTitle.textContent = `${recipient}`
+    //modalBodyInput.value = recipient
+  })
+
+
 
   $(".alert").delay(4000).slideUp(200, function() {
     $(this).alert('close');
@@ -78,7 +102,7 @@ $(document).ready(function() {
   // DELETE IMAGE //
   $(".delete-image").on("ajax:success", function(event, data, status, xhr) {
     var response = data.message;
-    console.log('Response is => ' + response);
+    console.log('delete-image Response is => ' + response);
     if (data.message === 'destroyed') {
       $(this).closest('tr').fadeOut();
       $(this).closest('.image-item').fadeOut();

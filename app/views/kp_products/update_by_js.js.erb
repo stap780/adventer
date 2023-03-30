@@ -1,0 +1,4 @@
+console.log("from update_by_js.erb - <%=@kp_product.id%>");
+
+$("#desc-wrap-<%=@kp_product.id%>").replaceWith("<%= j render('kp_products/desc_wrap', kp_p: @kp_product ) %>");
+
