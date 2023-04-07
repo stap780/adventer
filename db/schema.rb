@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_03_08_114554) do
+ActiveRecord::Schema.define(version: 2023_04_07_150346) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -147,6 +147,7 @@ ActiveRecord::Schema.define(version: 2023_03_08_114554) do
     t.integer "companykp3_id"
     t.bigint "user_id"
     t.integer "insid"
+    t.string "number_adventer"
     t.index ["company_id"], name: "index_orders_on_company_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end

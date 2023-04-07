@@ -4,7 +4,8 @@
 <div class="row mx-auto pt-1">
   <div class="col-12 row align-items-center my-3">
   <div class="h3 mb-0 col-1"><%= page_title %></div>
-  <%= f.input :number, label: false, as: :string, disabled: true, placeholder: "Номер заказа" , wrapper_html: { class: "col-1" } %>
+  <%= f.input :number, label: false, as: :string, disabled: true, placeholder: "Номер магазин" , wrapper_html: { class: "col-1" } %>
+  <%= f.input :number_adventer, label: false, as: :string, placeholder: "Внутр номер" , wrapper_html: { class: "col-2" } %>
   <div class="col-1 text-center">от</div>
   <%= f.input :created_at, label: false, as: :date, html5: true, disabled: true, placeholder: "Дата", wrapper_html: { class: "col-2" } %>
   </div>
