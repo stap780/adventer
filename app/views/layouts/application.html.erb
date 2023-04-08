@@ -9,7 +9,7 @@
     <%= csrf_meta_tags %>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/open-iconic/1.1.1/font/css/open-iconic-bootstrap.min.css" integrity="sha256-BJ/G+e+y7bQdrYkS2RBTyNfBHpA9IuGaPmf9htub5MQ=" crossorigin="anonymous" />
   </head>
-  <body>
+  <body class="d-flex flex-column min-vh-100">
     <header>
     <% if user_signed_in? && current_user.role.name != 'registered' %>  <%= render 'layouts/navigation' %> <% end %>
     </header>
@@ -17,7 +17,7 @@
        <%= render 'layouts/messages' %>
        <%= yield %>
     </main>
-    <footer class="pt-1 my-3 text-center text-muted">
+    <footer class="mt-auto pt-1 my-3 text-center text-muted">
     <p>Created by the Adventer team · © 2021</p>
   </footer>
     <%= render partial: "/layouts/modal"%>

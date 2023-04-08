@@ -52,7 +52,8 @@ class Services::Import
                 }
 
       search_product = Product.find_by_insvarid(save_data[:insvarid])
-      product = search_product.present? ? search_product : Product.create!(save_data)
+      product = search_product.present? ? search_product : 
+                                          Product.create!(save_data)
       puts "import product id - "+product.id.to_s
       images = row["Изображения"].present? ? row["Изображения"].split(' ').reject(&:blank?) : []
       # puts "images кол-во - #{images.count.to_s}"
