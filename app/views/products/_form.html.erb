@@ -5,14 +5,14 @@
   <div class="row">
     <div class="col-12 h3"><%= page_title %></div>
     <%= link_to "Товар в инсалес", "http://adventer.su/product_by_id/#{@product.insid}", target: "blank" if @product.insid %>
-    <div class="col-6">
-    <%= f.input :sku %>
-    <%= f.input :insid %>
-    <%= f.input :title, label: "Название" %>
-    <%= f.input :desc, label: "Описание", as: :text  %>
-    <%= f.input :quantity, label: "К-во"  %>
-    <%= f.input :costprice, label: "Цена закупки"  %>
-    <%= f.input :price, label: "Цена"  %>
+    <div class="col-6 row">
+    <%= f.input :sku, wrapper_html: { class: "col-6" } %>
+    <%= f.input :insid, disable: true, wrapper_html: { class: "col-6" } %>
+    <%= f.input :title, label: "Название", wrapper_html: { class: "col-12" } %>
+    <%= f.input :desc, label: "Описание", as: :text , wrapper_html: { class: "col-12" } %>
+    <%= f.input :quantity, label: "К-во" , wrapper_html: { class: "col-2" } %>
+    <%= f.input :costprice, label: "Цена закупки", wrapper_html: { class: "col-2" }  %>
+    <%= f.input :price, label: "Цена" , wrapper_html: { class: "col-2" } %>
 </div>
 <div class="col-6 row align-content-start">
   <div class="col-12 mb-3 h3">Изображения</div>
@@ -21,7 +21,7 @@
   </div>
 </div>
   <div class="row">
-  <div class="col-3 btn-group mt-5">
+  <div class="col-2 btn-group mt-5">
     <%= f.button :submit, class: 'btn btn-success' %>
     <%= link_to 'Назад', :back, class: 'btn btn-outline-primary' %>
   </div>

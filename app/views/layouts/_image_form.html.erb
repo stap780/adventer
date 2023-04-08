@@ -1,11 +1,11 @@
 <% if !f.new_record? && f.images.present? %>
 <div class="image-table row mt-3" <%= f %> >
   <% f.images.each do |image| %>
-  <div class="col-4 row align-items-center mt-1 image-item">
+  <div class="col-4 row align-items-center mt-1 image-item text-center">
     <div class="col-" data-image="<%= image.metadata %>">
     <%= image_tag image.variant(combine_options: {auto_orient: true, thumbnail: '160x160', gravity: 'center', extent: '160x160' }) %>
     </div>
-    <div class="col-">
+    <div class="col- mt-1">
     <%= link_to '<span class="oi oi-trash"></span>'.html_safe, delete_image_products_path(f.id, image.id), method: :delete, class: "btn btn-success delete-image", data: {confirm: "Are you sure?"}, remote: true %>
     </div>
   </div>

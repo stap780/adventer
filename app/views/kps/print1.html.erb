@@ -64,7 +64,7 @@
               <%= render "pdf_image", image_link: link, image_class: 'w45 image-product-contain' if image.present? %>
             </td>
             <td class="item-sku"><%= kp.product.sku.truncate(20) if kp.product.sku.present? %></td>
-            <td class="item-title"><%= kp.product.title %><br><%= kp.desc %></td>
+            <td class="item-title"><%= kp.product.title %><br><%= kp.desc if kp.use_desc == true %></td>
             <!-- <td class="qty">шт</td> -->
             <td class="item-price"><%= kp.price %> руб</td>
             <td class="item-qt"><%= kp.quantity %></td>

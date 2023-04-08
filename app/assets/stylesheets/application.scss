@@ -80,12 +80,7 @@ section {
   @extend .btn-sm;
 }
 // MAIN style changes
- .alert {
-  //  position: absolute;
-  //  min-width: 320px;
-  //  top: 50px;
-  //  right: 20px;
- }
+
  .alert-fixed {
   --mdb-alert-fixed-z-index: 1070;
   position: fixed;
@@ -99,7 +94,6 @@ section {
 }
   /* log_in and sign_up form style*/
   body {
-
     background-color: #eee;
   }
 
@@ -150,12 +144,10 @@ section {
   background-position: right 0.60rem center, center right 1.65rem;
   background-size: calc(0.40em + 0.305rem) calc(0.40em + 0.305rem);
 }
-  footer {
-    display: none;
-  }
+
 /* end log_in and sign_up form style*/
  /* paginate style*/
- .digg_pagination {
+.digg_pagination {
    background: white;
    cursor: default;
    /* self-clearing method: */ }

@@ -15,8 +15,15 @@
     <% sku = kp_p.sku.present? ? kp_p.sku : pr_sku %>
     <%= f.input :sku , label: false, input_html: { value: sku } %>
   </td>
-  <%= render 'kp_products/desc_wrap', :kp_p => kp_p %>
-  <td style="width:110px;"><%= f.input :quantity, as: :integer, label: false, input_html: {min: "0" , onchange: "calculate(this.value)"} %></td>
+   <td>
+   <div class="row">
+     <%= render 'kp_products/desc_wrap', :kp_p => kp_p %>
+     <div class="col-md-12">
+      <%= f.input :use_desc, label: 'включить', as: :boolean, boolean_style: :inline, :input_html => { :checked => true } %>
+     </div>
+   </div>
+    </td>
+  <td style="width:90px;"><%= f.input :quantity, as: :integer, label: false, input_html: {min: "0" , onchange: "calculate(this.value)"} %></td>
   <td style="width:155px;"><%= f.input :price, as: :decimal, label: false, input_html: {min: "0", onchange: "calculate()", step: "0.01"}%></td>
   <td style="width:155px;"><%= f.input :sum, as: :decimal, label: false, input_html: {min: "0", onchange: "calculate()", step: "0.01"} %></td>
   <td><%= link_to_remove_association '<span class="oi oi-trash"></span>'.html_safe, f %></td>

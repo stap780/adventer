@@ -1,4 +1,4 @@
- <td id="desc-wrap-<%=kp_p.id%>">
+<div class="col-md-12" id="desc-wrap-<%=kp_p.id%>">
     <% pr_desc = kp_p.product.present? ? kp_p.product.desc : '' %>
     <% value = kp_p.desc.present? ? kp_p.desc : pr_desc %>
     <span role="button" class="desc" id="desc_<%=kp_p.id%>" data-bs-toggle="popover" data-bs-content="<%= value %>" data-bs-trigger="hover focus" ><%= value.truncate(20) %></span>
@@ -10,4 +10,5 @@
                                                 href="/kp_products/<%=kp_p.id%>/update_modal">
     <span class="oi oi-pencil"></span>
     </a>
-  </td>
+</div>
+
