@@ -24,11 +24,13 @@ class Product < ApplicationRecord
       when 200
         data = JSON.parse(response)
         data["variants"].each do |var|
-          sdesc = data["short_description"].present? ? Product.strip_html(data["short_description"]) : ''
+          sdesc = data["short_description"].present? ? Product.strip_html(data["short_description"]) : nil
+          fdesc = data["description"].present? ? Product.strip_html(data["description"]) : ''
+          desc = sdesc.present? ? sdesc : fdesc
           save_data = {
             insvarid: var["id"],
             title: data["title"],
-            desc: sdesc,
+            desc: desc,
             insid: data["id"],
             sku: var["sku"],
             quantity: var["quantity"],
@@ -36,7 +38,7 @@ class Product < ApplicationRecord
             price: var["price"]
           }
           search_product = Product.find_by_insvarid(save_data[:insvarid])
-          product = search_product.present? ? search_product : Product.create(save_data)
+          product = search_product.present? ? search_product : Product.create!(save_data)
 
           #pp save_data
 

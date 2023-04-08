@@ -30,7 +30,7 @@ class Services::Import
   def self.product
     require 'open-uri'
     puts '=====>>>> СТАРТ InSales EXCEL '+Time.now.to_s
-    url = "https://adventer.su/marketplace/96164.xls"
+    url = "https://adventer.su/marketplace/2416318.xls"
 		filename = url.split('/').last
     download = open(url)
 		download_path = Services::Import::DownloadPath+"/public/"+filename
@@ -39,12 +39,14 @@ class Services::Import
     header = spreadsheet.row(1)
     (2..spreadsheet.last_row).each do |i|
       row = Hash[[header, spreadsheet.row(i)].transpose]
-      sdesc = row["Краткое описание"].present? ? Product.strip_html(row["Краткое описание"]) : ''
+      sdesc = row["Краткое описание"].present? ? Product.strip_html(row["Краткое описание"]) : nil
+      fdesc = row["Полное описание"].present? ? Product.strip_html(row["Полное описание"]) : ''
+      desc = sdesc.present? ? sdesc : fdesc
       save_data = {
                   insvarid: row["ID варианта"].to_i,
                   sku: row["Артикул"].to_s,
                   title: row["Название товара"].to_s,
-                  desc: sdesc,
+                  desc: desc,
                   price: row["Цена продажи"].to_i,
                   insid: row["ID товара"].to_i
                 }
