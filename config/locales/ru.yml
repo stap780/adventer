@@ -64,6 +64,12 @@ ru:
         other: Пользователи
     errors:
       models:
+        product:
+          attributes:
+            title:
+              blank: "пусто"
+            quantity:
+              blank: "пусто"
         kp_product:
           attributes:
             quantity:

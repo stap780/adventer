@@ -6,8 +6,9 @@
     <div class="col-12 h3"><%= page_title %></div>
     <%= link_to "Товар в инсалес", "http://adventer.su/product_by_id/#{@product.insid}", target: "blank" if @product.insid %>
     <div class="col-6 row">
-    <%= f.input :sku, wrapper_html: { class: "col-6" } %>
-    <%= f.input :insid, disabled: true, wrapper_html: { class: "col-6" } %>
+    <%= f.input :sku, wrapper_html: { class: "col-4" } %>
+    <%= f.input :insid, disabled: true, wrapper_html: { class: "col-4" } %>
+    <%= f.input :insvarid, wrapper_html: { class: "col-4" } %>
     <%= f.input :title, label: "Название", wrapper_html: { class: "col-12" } %>
     <%= f.input :desc, label: "Описание", as: :text , wrapper_html: { class: "col-12" } %>
     <%= f.input :quantity, label: "К-во" , wrapper_html: { class: "col-4" } %>

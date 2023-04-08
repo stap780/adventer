@@ -37,6 +37,7 @@
     <tr class="text-secondary">
       <th><%= check_box_tag 'selectAll', 'selectAll'%></th>
       <th>Sku</th>
+      <th>Insales id</th>
       <th>Название</th>
       <th>Описание</th>
       <th>Кол-во</th>
@@ -51,6 +52,7 @@
     <tr class="align-middle">
       <td><%= check_box_tag "product_ids[]", product.id %></td>
         <td style="width:170px;"><%= product.sku.truncate(20) if product.sku.present? %></td>
+        <td>id товара: <%= product.insid.to_s %><br>id варианта: <%= product.insvarid.to_s %></td>
         <td style="width:250px;"><%= link_to product.title, edit_product_path(product)%></td>
         <td style="width:250px;"><%= product.desc.truncate(30) if product.desc.present? %></td>
         <td><%= product.quantity %></td>

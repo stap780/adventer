@@ -45,7 +45,7 @@ class Services::Import
       save_data = {
                   insvarid: row["ID варианта"].to_i,
                   sku: row["Артикул"].to_s,
-                  title: row["Название товара"].to_s,
+                  title: row["Название товара или услуги"].to_s,
                   desc: desc,
                   price: row["Цена продажи"].to_i,
                   insid: row["ID товара"].to_i
