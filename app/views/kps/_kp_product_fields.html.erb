@@ -6,7 +6,6 @@
   </td>
 
   <td class="" style="width:30%;">
-      <%# f.association :product, label: false, collection: Product.all.map { |product| ["("+product.sku+") "+product.title, product.id, {data: {sku: product.sku}}] } %>
     <%= f.input :product_title, as: :autocomplete, label: false, url: autocomplete_product_title_order_kps_path , input_html: {onkeyup: "getId(this.id)", onclick:"productAutocomplete(this.id)"} %>
     <%= f.input :product_id, as: :hidden %>
   </td>
@@ -17,10 +16,10 @@
   </td>
    <td>
    <div class="row">
-     <%= render 'kp_products/desc_wrap', :kp_p => kp_p %>
-     <div class="col-md-12">
-      <%= f.input :use_desc, label: 'включить', as: :boolean, boolean_style: :inline, :input_html => { :checked => true } %>
-     </div>
+    <%= render 'kp_products/desc_wrap', :kp_p => kp_p %>
+    <div class="col-md-12">
+    <%= f.input :use_desc, label: 'включить', as: :boolean, boolean_style: :inline%>
+    </div>
    </div>
     </td>
   <td style="width:90px;"><%= f.input :quantity, as: :integer, label: false, input_html: {min: "0" , onchange: "calculate(this.value)"} %></td>

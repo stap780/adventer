@@ -59,7 +59,7 @@ class KpsController < ApplicationController
         # puts v["product_sku_title"]
         # product = Product.find_or_create_by(title: v["product_sku_title"], quantity: v["quantity"], price: v["price"], sku: v["product_sku_title"].gsub(' ','_'))
         sku = v["sku"].present? ? v["sku"] : ''
-        product = Product.find_or_create_by(title: v["product_title"], quantity: v["quantity"], price: v["price"], sku: sku )
+        product = Product.find_or_create_by(title: v["product_title"], quantity: v["quantity"], price: v["price"], sku: sku, desc: '' )
         # puts product.id.to_s
         v["product_id"] = product.id
       end
@@ -389,6 +389,6 @@ class KpsController < ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def kp_params
-    params.require(:kp).permit(:vid, :status, :title, :order_id, :extra, :comment, kp_products_attributes:[:id, :kp_id,:quantity,:price,:sum,:product_id, :desc, :sku,:_destroy])
+    params.require(:kp).permit(:vid, :status, :title, :order_id, :extra, :comment, kp_products_attributes:[:id, :kp_id,:quantity,:price,:sum,:product_id, :desc, :sku, :use_desc,:_destroy])
   end
 end
