@@ -18,6 +18,8 @@ class Ability
       can :autocomplete_product_title, Kp
       can [:print1, :print2, :print3, :print4], Kp
       can [:file_import, :file_export], Kp
+      can [:update_modal], KpProduct
+      can :manage, KpProduct
       can :manage, Product
       cannot :insales_import, Product
       can :manage, Client
