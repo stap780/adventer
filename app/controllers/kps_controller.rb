@@ -80,7 +80,8 @@ class KpsController < ApplicationController
   def destroy
     @kp.destroy
     respond_to do |format|
-      format.html { redirect_to edit_order_path(@order), notice: 'КП удалено' }
+      format.html { redirect_to edit_order_path(@order) , notice: 'КП удалено' }
+      # format.html { redirect_to edit_order_kp_path(@order) , notice: 'КП удалено' }
       format.json { head :no_content }
     end
   end

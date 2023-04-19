@@ -37,8 +37,8 @@
 
       <div class="kp-title">
         <center>
-          <h1>Коммерческое предложение</h1><br>
-          <h3><% if @kp.title.present? %><%= @kp.title%><% end %></h3>
+          <h1>Коммерческое предложение</h1>
+          <h3><%= @kp.title if @kp.title.present?%></h3>
         </center>
       </div>
 
