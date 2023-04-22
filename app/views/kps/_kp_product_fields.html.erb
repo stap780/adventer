@@ -16,10 +16,10 @@
   </td>
    <td>
    <div class="row">
+   <div class="col-12 row align-items-center" id="desc-wrap-<%=kp_p.id%>">
     <%= render 'kp_products/desc_wrap', :kp_p => kp_p %>
-    <div class="col-md-12">
-      <%= f.input :use_desc, label: 'включить', as: :boolean, boolean_style: :inline%>
-    </div>
+    <%= f.input :use_desc, label: false, as: :boolean, boolean_style: :inline,wrapper_html: {class: 'col-1'} , input_html: {"data-bs-toggle": 'popover', "data-bs-trigger": 'hover', "data-bs-content" => "включить описание"}%>
+   </div>
    </div>
     </td>
   <td style="width:90px;"><%= f.input :quantity, as: :integer, label: false, input_html: {min: "0" , onchange: "calculate(this.value)"} %></td>

@@ -1,14 +1,13 @@
-<div class="col-md-12" id="desc-wrap-<%=kp_p.id%>">
+
     <% pr_desc = kp_p.product.present? ? kp_p.product.desc : '' %>
     <% value = kp_p.desc.present? ? kp_p.desc : pr_desc %>
-    <span role="button" class="desc" id="desc_<%=kp_p.id%>" data-bs-toggle="popover" data-bs-content="<%= value %>" data-bs-trigger="hover focus" ><%= value.truncate(20) if value.present?%></span>
-    <a id="edit_kp_product" title="file import" data-bs-toggle="modal" 
-                                                data-bs-target="#modal-edit"
-                                                data-bs-whatever="Редактирование описания"
-                                                data-remote="true" 
-                                                class="btn btn-outline-info btn-sm" 
-                                                href="/kp_products/<%=kp_p.id%>/update_modal">
+    <span role="button" class="col desc" id="desc_<%=kp_p.id%>" data-bs-toggle="popover" data-bs-content="<%= value %>" data-bs-trigger="hover focus" ><%= value.truncate(20) if value.present?%></span>
+    <a id="edit_kp_product" class="col-1 text-info"  href="/kp_products/<%=kp_p.id%>/update_modal"  data-bs-toggle="modal"
+                                                                                                    data-bs-target="#modal-edit"
+                                                                                                    data-bs-whatever="Редактирование описания"
+                                                                                                    data-remote="true"
+                                                                                                    title="Редактирование описания">
     <span class="oi oi-pencil"></span>
     </a>
-</div>
+
 
