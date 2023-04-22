@@ -80,6 +80,8 @@
       </table>
 
       <div class="wrapper-notice">
+      <div id="text_dostavka"><%= @kp.text_dostavka if @kp.text_dostavka.present? %></div>
+       <div id="text_sborka"><%= @kp.text_sborka if @kp.text_sborka.present? %></div>
         <div id="thanks">Организация работает без НДС на основании ст. 346.11 НК РФ.<br>Цены по данному коммерческому предложению действительны в течение 14 дней.</div>
         <div id="notices">
           <!-- <div>NOTICE:</div> -->
