@@ -359,7 +359,7 @@ class KpsController < ApplicationController
   def import
     @kp = Kp.find(params[:id])
     Kp.import(params[:file], params[:order_id], params[:id])
-    flash[:notice] = 'Products was successfully import'
+    flash[:notice] = 'Позиции КП импортировались'
     redirect_to edit_order_kp_path(@order, @kp)
 	end
 
@@ -390,6 +390,6 @@ class KpsController < ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def kp_params
-    params.require(:kp).permit(:vid, :status, :title, :order_id, :extra, :comment,:text_dostavka, :text_sborka, kp_products_attributes:[:id, :kp_id,:quantity,:price,:sum,:product_id, :desc, :sku, :use_desc,:_destroy])
+    params.require(:kp).permit(:vid, :status, :title, :order_id, :extra, :comment,:text_dostavka, :text_sborka, kp_products_attributes:[:id, :kp_id,:quantity,:price,:sum,:product_id, :desc, :sku, :use_desc, :image,:_destroy])
   end
 end

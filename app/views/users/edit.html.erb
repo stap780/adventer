@@ -13,7 +13,7 @@
   <div class="col-6">
     <% if current_admin %>
       <div class="col-12 mt-3 mb-3 h3">Подпись</div>
-      <%= f.input :avatar, as: :file, label: false, direct_upload: true%>
+      <%= f.input :avatar, as: :file, label: false, direct_upload: true %>
       <div class="image-table row justify-content-between mt-3">
         <% if @user.avatar.attached?%>
         <div class="col-6 row align-items-center mt-1 image-item">

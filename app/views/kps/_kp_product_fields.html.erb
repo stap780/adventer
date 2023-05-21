@@ -1,8 +1,13 @@
 <% kp_p = f.object.present? ? f.object : f %>
 <tr class="nested-fields align-middle" id="nested-fields-<%= kp_p.id%>" data-kp-p-id="<%= kp_p.id%>">
-  <td width="60px" height="50px">
-      <% image = kp_p.product.present? && kp_p.product.images.present? ? kp_p.product.images.first : ''%>
-      <%= image_tag image, class: "mx-auto d-block" %>
+  <td width="100px" height="50px" data-image="<%= kp_p.image_data%>">
+      <%= f.input :image, as: :file, direct_upload: true, label: 'картинка', :input_html => { :multiple => false , class: 'custom-file-input'}, wrapper_html: {class: ''}, :label_html => { :class => "custom-file-label" } %>
+      <% if kp_p.image.attached? %>
+        <%= image_tag url_for(kp_p.image) %>
+      <% else %>
+        <% image = kp_p.product.present? && kp_p.product.images.present? ? kp_p.product.images.first : ''%>
+        <%= image_tag image, class: "mx-auto d-block" %>
+      <% end %>
   </td>
 
   <td class="" style="width:30%;">

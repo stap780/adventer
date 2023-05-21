@@ -2,7 +2,14 @@ class KpProductsController < ApplicationController
   before_action :authenticate_user!
   authorize_resource
   skip_authorization_check :only => [:update_by_bip, :update_modal, :update_by_js ]
-  before_action :set_kp_product, only: [:show, :edit, :update, :destroy, :update_by_bip, :update_modal]
+  before_action :set_kp_product, only: [:show, :edit, :update, :destroy, :update_by_bip, :update_modal, :image_update_modal]
+
+
+  def autocomplete_product_title
+    term = params[:term]
+    products = Product.search_by_title_sku(term).all
+    render :json => products.map { |product| {id: product.id, title: product.title, label: product.autocomplete_title, value: product.autocomplete_title, sku: product.sku, price: product.price, desc: product.desc } }
+  end
 
   # GET /kp_products
   def index
@@ -89,6 +96,13 @@ class KpProductsController < ApplicationController
       format.js
     end
   end
+
+  # def image_update_modal
+  #   respond_to do |format|
+  #     format.js
+  #   end
+  # end
+
   
   def update_by_js
     @kp_product = KpProduct.find(params[:id])
@@ -109,6 +123,6 @@ class KpProductsController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def kp_product_params
-      params.require(:kp_product).permit(:desc, :quantity, :price, :sum, :kp_id, :product_id, :sku, :use_desc)
+      params.require(:kp_product).permit(:desc, :quantity, :price, :sum, :kp_id, :product_id, :sku, :use_desc, :image)
     end
 end

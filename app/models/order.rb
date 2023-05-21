@@ -55,7 +55,7 @@ class Order < ApplicationRecord
       case response.code
       when 200
         data = JSON.parse(response)
-          Order.one_order(data)
+        Order.one_order(data)
       when 422
         puts "error 422 - не удалили товар"
       when 404

@@ -1,1 +1,17 @@
-<%= f.input :desc, label: 'Описание', as: :text, input_html: { rows: "7" } %>
+
+<div class="row">
+    <%= f.input :image, as: :file, wrapper: :vertical_file, :input_html => { :multiple => false }, wrapper_html: {class: 'col-3 d-flex align-items-center'} %>
+    <div class="col-8">
+    <%= f.input :product_title, as: :autocomplete, url: autocomplete_product_title_kp_products_path , input_html: {onkeyup: "getId(this.id)", onclick:"productAutocomplete(this.id)"} %>
+    <%= f.input :product_id, as: :hidden %>
+    <%= f.input :kp_id, as: :hidden %>
+    </div>
+    <% pr_sku = f.object.product.present? ? f.object.product.sku : '' %>
+    <% sku = f.object.sku.present? ? f.object.sku : pr_sku %>
+    <%= f.input :sku, input_html: { value: sku }, wrapper_html: {class: 'col-2'} %>
+    <%= f.input :desc, input_html: {  }, wrapper_html: {class: 'col-8'} %>
+    <%= f.input :use_desc, wrapper: :custom_switch, as: :boolean, input_html: {"data-bs-toggle": 'popover', "data-bs-trigger": 'hover', "data-bs-content" => "включить описание"}, wrapper_html: {class: 'col-2 d-flex align-items-center'}%>
+    <%= f.input :quantity, as: :integer, input_html: {min: "0" , onchange: "calculate(this.value)"}, wrapper_html: {class: 'col-2'}  %>
+    <%= f.input :price, as: :decimal, input_html: {min: "0", onchange: "calculate()", step: "0.01"}, wrapper_html: {class: 'col-2'} %>
+    <%= f.input :sum, as: :decimal, input_html: {min: "0", onchange: "calculate()", step: "0.01"}, wrapper_html: {class: 'col-2'}  %>
+</div>

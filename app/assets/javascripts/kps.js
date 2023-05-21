@@ -223,5 +223,17 @@ $(document).ready(function() {
     calculate();
   });
 
+
+
+  $('.custom-file-input').change(function(e){
+    // console.log('e', e)
+    var fileName = e.target.files[0].name;
+    // console.log('fileName => ', fileName);
+    // console.log('target => ', e.currentTarget['id']);
+    $(`.custom-file-label[for=${e.currentTarget['id']}]`).html(fileName);
+    $(`.custom-file-label[for=${e.currentTarget['id']}]`).show();
+  });
+
+
 });
 

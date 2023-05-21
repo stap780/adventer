@@ -59,7 +59,7 @@
           <tr>
             <td class="item-nu"><%= (i+1) %></td>
             <td class="item-image">
-              <% image = kp.product.images.first %>
+              <% image = kp.image.attached? ? kp.image : kp.product.images.first %>
               <% link = image.present? ? "/tmp"+wicked_image_active_storage_workaround(image).to_s.split('/tmp').last : '' %>
               <%= render "pdf_image", image_link: link, image_class: 'w45 image-product-contain' if image.present? %>
             </td>

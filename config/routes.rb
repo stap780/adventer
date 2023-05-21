@@ -13,8 +13,12 @@ Rails.application.routes.draw do
     member do
       put :update_by_bip
       get :update_modal
+      # get :image_update_modal
       patch :update_by_js
-  end
+    end
+    collection do
+      get :autocomplete_product_title
+    end
   end
   get 'kps', to: 'kps#index_all'
   resources :orders do
