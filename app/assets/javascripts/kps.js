@@ -182,12 +182,15 @@ $(document).ready(function() {
   // пересчет суммы при удалении позиции из перечня товаров в исходящем счете
   $("#kp_products").children('tbody')
     .on('cocoon:before-remove', function(e, removeRow) {
+      console.log( 'before-remove removeRow => ', removeRow.find('input')[0]);
+      console.log( 'before-remove removeRow => ', removeRow.find('input')[0].id );
       // console.log( 'before-remove tr => ', $(this).closest('tr') );
       // console.log( 'before-remove tr context.firstElementChild => ', $(this).closest('tr').context.firstElementChild.dataset   );
       // var kp_id = $(this).closest('tr').context.firstElementChild.dataset.kpPId;
-      idNode = removeRow.children('td').children([0]).children([0]).attr('id');
+      //idNode = removeRow.children('td').children([0]).children([0]).attr('id');
+      idNode = removeRow.find('input')[0].id;
       console.log(idNode);
-      var input_id = idNode.replace("_product_title", "_id");
+      var input_id = idNode.replace("_image", "_id");
       $(this).data('remove-timeout', 1000);
       var input = $('#'+input_id).remove();
       var kp_product_id = input.val();
