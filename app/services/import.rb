@@ -381,6 +381,7 @@ class Services::Import
   end
   
   def self.process_image(link, file_name)
+    image = ''
     begin
       check = open(link)
     rescue OpenURI::HTTPError
