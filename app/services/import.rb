@@ -381,7 +381,7 @@ class Services::Import
   end
   
   def self.process_image(link, file_name)
-    result = ImageProcessing::MiniMagick.source(link).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
+    result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
     image_magic = MiniMagick::Image.open(result.path)
     image_magic.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
     image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
