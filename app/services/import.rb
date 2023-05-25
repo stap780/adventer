@@ -227,7 +227,7 @@ class Services::Import
               cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
               row_index_for_titles_array.push(cat_title_row.row_index+1)
               if excel_price.rrc == true
-                sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой 20%','Цена РРЦ'], style: tbl_header, height: 20
+                sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой','Цена РРЦ'], style: tbl_header, height: 20
               else
                 sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
               end
@@ -381,10 +381,15 @@ class Services::Import
   end
   
   def self.process_image(link, file_name)
+    check = open(link)
+    if check
     result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
     image_magic = MiniMagick::Image.open(result.path)
     image_magic.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
     image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
+    else
+      image = ''
+    end
   end
 
   def self.price_shift(excel_price, price)
@@ -414,7 +419,10 @@ class Services::Import
     pr_ids.each do |pr_id|
       pr = all_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
                                                   offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('ФД') ||
-                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('АДВ')
+                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
+                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
+                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
+                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('УК')
                                                       }[0]
       new_pr_ids.push(pr['id']) if !pr.nil?
     end
