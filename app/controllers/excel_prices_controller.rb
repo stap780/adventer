@@ -76,7 +76,13 @@ class ExcelPricesController < ApplicationController
 
   def import
     Rails.env.development? ? Services::Import.excel_price(@excel_price) : ImportExcelPriceJob.perform_later(@excel_price)
-    redirect_to excel_prices_url, notice: 'Запущен процесс создания файла эксель. Дождитесь выполнении процесса.'
+    # redirect_to excel_prices_url, notice: 'Запущен процесс создания файла эксель. Дождитесь выполнении процесса.'
+    notice = 'Запущен процесс создания файла эксель. Дождитесь выполнении процесса.'
+    respond_to do |format|
+      format.js do
+        flash.now[:notice] = notice
+      end
+    end
   end
 
   def check_file_status

@@ -210,7 +210,7 @@ class Services::Import
       notice_text = Axlsx::RichText.new
       notice_text.add_run('Подсказка: ', :b => true)
       notice_text.add_run('для того чтобы открыть позицию на сайте нажмите на наименование/фото товара')
-      wb.add_worksheet(name: cat[:title].at(0..30).gsub('/',',')) do |sheet|
+      wb.add_worksheet(name: cat[:title].at(0..30).gsub('/',',').gsub('?','')) do |sheet|
         sheet.add_row ['','<= НА ГЛАВНУЮ','', cat[:title]], style: [nil,back_button,back_button,ind_header], height: 30
         sheet.add_row ['',notice_text,'','','','',''], style: [nil,notice_b,notice_label,notice_b,notice_b,notice_b,notice_b,notice_b], height: 20
         second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
