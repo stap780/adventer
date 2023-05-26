@@ -382,6 +382,7 @@ class Services::Import
   
   def self.process_image(link, file_name)
     image = ''
+    if link.present?
     begin
       check = open(link)
     rescue OpenURI::HTTPError
@@ -391,6 +392,7 @@ class Services::Import
       image_magic = MiniMagick::Image.open(result.path)
       image_magic.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
       image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
+    end
     end
   end
 
