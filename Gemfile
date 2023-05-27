@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.4.4'
+ruby '2.5.3'
 gem 'rails', '~> 5.2.4', '>= 5.2.4.4'
 gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '>= 1.3.0'
@@ -15,7 +15,7 @@ gem 'devise'
 gem 'high_voltage'
 gem 'simple_form'
 gem 'rest-client'
-gem 'nokogiri'
+gem 'nokogiri', '~> 1.11', '>= 1.11.3'
 gem 'cocoon'
 gem 'will_paginate', '~> 3.3'
 gem 'ransack'

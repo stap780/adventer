@@ -204,6 +204,7 @@ class Services::Import
 
     # row_index_for_titles_array = []
     puts "start create seconds collections sheets"
+    puts "seconds collections categories_for_list count => "+categories_for_list.count.to_s
     categories_for_list.each_with_index do |cat, index|
       row_index_for_titles_array = []
       puts "start create sheet -> "+cat[:title]
@@ -215,15 +216,17 @@ class Services::Import
         sheet.add_row ['',notice_text,'','','','',''], style: [nil,notice_b,notice_label,notice_b,notice_b,notice_b,notice_b,notice_b], height: 20
         second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
         if second_cats.present?
+          puts "second_cats.present? => "+second_cats.present?.to_s
           second_cats.each do |s_cat|
             if excel_price.our_product == true
-              cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(cat[:id]).take(15) :
-              Services::Import.collect_our_product_ids(cat[:id])
+              cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(s_cat[:id]).take(15) :
+              Services::Import.collect_our_product_ids(s_cat[:id])
             else
-              cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(15) :
-                                                      Services::Import.collect_product_ids(cat[:id])
+              cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(s_cat[:id]).take(15) :
+                                                      Services::Import.collect_product_ids(s_cat[:id])
             end
-              if cat_products.present?
+            if cat_products.present?
+              puts "second_cat have products"
               cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
               row_index_for_titles_array.push(cat_title_row.row_index+1)
               if excel_price.rrc == true
@@ -231,7 +234,7 @@ class Services::Import
               else
                 sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
               end
-                cat_products.each_with_index do |pr_id, index|
+              cat_products.each_with_index do |pr_id, index|
                 pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
                 if pr.present?
                   data = Services::Import.collect_product_data_from_xml(pr,excel_price)
@@ -252,6 +255,8 @@ class Services::Import
                   end
                 end           
               end
+            else
+              puts "second_cat don't have products"
             end
           end
         end
@@ -329,7 +334,7 @@ class Services::Import
       puts "finish create sheet -> "+cat[:title]
     end
     puts "finish create seconds collections sheets"
-
+    puts "p.present? => "+p.present?.to_s
     stream = p.to_stream
     file_path = Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx"
     File.open(file_path, 'wb') { |f| f.write(stream.read) }
@@ -386,7 +391,11 @@ class Services::Import
       begin
         check = open(link)
       rescue OpenURI::HTTPError
-        puts  'OpenURI::HTTPError'
+        puts  'process_image OpenURI::HTTPError'
+        puts link
+      rescue Net::OpenTimeout
+        puts 'process_image Net::OpenTimeout'
+        puts link
       else
         result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
         image_magic = MiniMagick::Image.open(result.path)
