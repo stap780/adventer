@@ -105,7 +105,6 @@ class Services::Import
 
     categories_for_list = select_main_cat.present? ? all_categories.select{|c| c[:parent_id] == select_main_cat[0][:id]} : 
                                                      all_categories
-
     p = Axlsx::Package.new
     wb = p.workbook
     # style section
