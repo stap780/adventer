@@ -10,7 +10,6 @@ gem 'jquery-rails'
 gem 'jquery-ui-rails'
 gem 'jbuilder', '~> 2.5'
 gem 'bootstrap', '~> 5.2.0'
-
 gem 'devise'
 gem 'high_voltage'
 gem 'simple_form'
