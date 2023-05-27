@@ -15,7 +15,7 @@ gem 'devise'
 gem 'high_voltage'
 gem 'simple_form'
 gem 'rest-client'
-gem 'nokogiri', '~> 1.11', '>= 1.11.3'
+gem 'nokogiri'
 gem 'cocoon'
 gem 'will_paginate', '~> 3.3'
 gem 'ransack'
@@ -41,8 +41,6 @@ gem 'caxlsx_rails'
 gem 'insales_api'
 gem 'rubyzip'
 gem 'delayed_job_web'
-gem 'rubocop', '~> 1.10'
-gem 'rubocop-rails', require: false
 gem 'best_in_place', '~> 3.0.1'
 
 gem 'bcrypt_pbkdf', '< 2.0', :require => false
