@@ -82,11 +82,11 @@ class Services::Import
   
   def self.excel_price(excel_price)
     require 'open-uri'
-    puts "=====>>>> СТАРТ import excel_price #{Time.now.to_s}"
+    puts "===>>>> СТАРТ import excel_price #{Time.now.to_s}"
     
     puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
     all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
-    puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"    
+    puts "=====>>>> Finish import all_offers #{Time.now.to_s}"    
     
     excel_price.update!(file_status: 'process')
     File.delete(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx") if File.file?(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx").present?
@@ -334,7 +334,8 @@ class Services::Import
     end
     puts "finish create seconds collections sheets"
     puts "p.present? => "+p.present?.to_s
-    # puts "p => "+p.to_s
+    puts "p => "+p.to_s
+    puts "p inspect => "+p.inspect.to_s
     # stream = p.to_stream
     file_path = Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx"
     # File.open(file_path, 'wb') { |f| f.write(stream.read) }
@@ -344,7 +345,7 @@ class Services::Import
     excel_price.update!(file_status: 'end') if File.file?(file_path).present?
     File.delete(download_path) if File.file?(download_path).present?
 
-    puts "=====>>>> FINISH import excel_price #{Time.now.to_s}"
+    puts "===>>>> FINISH import excel_price #{Time.now.to_s}"
 
     current_process = "=====>>>> FINISH import excel_price - #{Time.now.to_s} - Закончили импорт каталога товаров для файла клиента"
   	# ProductMailer.notifier_process(current_process).deliver_now

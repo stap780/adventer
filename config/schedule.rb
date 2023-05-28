@@ -37,5 +37,5 @@ every 1.day, :at => '23:45' do #
 end
 
 every 1.day, :at => '05:00' do #
-  rake "Services::Import.load_all_catalog_xml"
+  runner "Services::Import.load_all_catalog_xml"
 end
