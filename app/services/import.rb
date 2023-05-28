@@ -335,8 +335,9 @@ class Services::Import
     puts "finish create seconds collections sheets"
     puts "p.present? => "+p.present?.to_s
     puts "p => "+p.to_s
-    puts "p inspect => "+p.inspect.to_s
     
+    puts "p inspect => "+p.inspect.to_s
+
     # stream = p.to_stream
     file_path = Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx"
     # File.open(file_path, 'wb') { |f| f.write(stream.read) }
