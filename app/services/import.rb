@@ -436,7 +436,7 @@ class Services::Import
     new_pr_ids = []
     pr_ids.each do |pr_id|
       pr = all_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
-                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('ФД') ||
+                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
                                                   offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
                                                   offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
                                                   offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
