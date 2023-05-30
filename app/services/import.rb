@@ -271,7 +271,7 @@ class Services::Import
             cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
             row_index_for_titles_array.push(cat_title_row.row_index+1)
             if excel_price.rrc == true
-              sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой 20%','Цена РРЦ'], style: tbl_header, height: 20
+              sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой','Цена РРЦ'], style: tbl_header, height: 20
             else
               sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
             end
@@ -280,8 +280,9 @@ class Services::Import
               if pr.present?
                   data = Services::Import.collect_product_data_from_xml(pr,excel_price)
                   if excel_price.rrc == true
-                    discount = data[:price]-data[:price]*0.2
-                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
+                    #discount = data[:price]-data[:price]*0.2
+                    #pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
+                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price],data[:rrc]]
                   else
                     pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
                   end
@@ -384,6 +385,7 @@ class Services::Import
             sku: pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id'],
             desc: pr.css('description').text.present? ? pr.css('description').text : ' ',
             price: Services::Import.price_shift(excel_price, pr.css('price').text),
+            rrc: pr.css('price').text,
             url: pr.css('url').text,
             image: Services::Import.process_image(picture_link, pr['id'])
           }
