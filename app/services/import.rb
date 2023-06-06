@@ -335,7 +335,7 @@ class Services::Import
     end
     puts "finish create seconds collections sheets"
     puts "p.present? => "+p.present?.to_s
-    puts "p => "+p.to_s
+    # puts "p => "+p.to_s
     
     puts "p inspect => "+p.inspect.to_s
 
@@ -358,13 +358,20 @@ class Services::Import
   def self.collect_main_list_cat_info(categories_main_list)
     account_url = "http://"+InsalesApi::Account.find.subdomain+".myinsales.ru"
     categories_main_list.each do |cat|
+      puts "cat => "+cat.to_s
+      puts "cat id => "+cat[:id].to_s
       search_cat = InsalesApi::Collection.find(cat[:id])
+      puts "search_cat data => "+search_cat.to_s
       cat[:link] = account_url+search_cat.url
       begin 
-        cat[:image] = URI.encode(search_cat.image.original_url)
+        URI.encode(search_cat.image.original_url)
       rescue Exception => e
         puts "Error caught " + e.to_s
-        next
+        #next
+        cat[:image] = "http://157.245.114.19/logo_little__200x70_.png"
+        puts "image " + cat[:image].to_s
+      else
+        cat[:image] = URI.encode(search_cat.image.original_url)
       end
     end
     # puts "categories_main_list - "+categories_main_list.to_s
