@@ -61,7 +61,7 @@
         </thead>
         <tbody>
           <% @order.kps.order('created_at' => 'asc' ).each do |kp| %>
-            <tr class="align-middle <%= kp_status_bg_color(kp.status) if kp.status.include?('Финальный') %>">
+            <tr class="align-middle text-center <%= kp_status_bg_color(kp.status) if kp.status.include?('Финальный') %>">
               <!--<td><%# kp.vid %></td>-->
               <td class="<%= kp_status_bg_color(kp.status)%>"><%= kp.status %></td>
               <td><%= kp.title %></td>
