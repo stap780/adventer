@@ -98,18 +98,20 @@ class Order < ApplicationRecord
         quantity: ol["quantity"],
         price: ol["sale_price"],
         sum: ol["total_price"],
-        variant_id: ol["variant_id"]
+        variant_id: ol["variant_id"],
+        desc: ol["title"]
       }
       # pp data
       check_product = Product.find_by_insvarid(data[:variant_id])
       if check_product.present?
-        product_id = check_product.id
+        data[:product_id] = check_product.id
       else
          Product.download_ins_product(ol["product_id"] )
-         product_id = Product.find_by_insvarid(data[:variant_id]).id
+         data[:product_id] = Product.find_by_insvarid(data[:variant_id]).id
       end
-
-      kp.kp_products.create(quantity: data[:quantity], price:  data[:price], sum:  data[:sum], product_id:  product_id )
+      data.delete(:variant_id)
+      #kp.kp_products.create(quantity: data[:quantity], price:  data[:price], sum:  data[:sum], product_id:  product_id )
+      kp.kp_products.create(data)
     end
   end
 

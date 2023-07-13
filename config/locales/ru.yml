@@ -82,6 +82,10 @@ ru:
           attributes:
             email:
               taken: "Адрес уже используется"
+        client:
+          attributes:
+            phone:
+              invalid: "Не правильный формат телефона"
       messages:
         record_invalid: 'Возникли ошибки: %{errors}'
         restrict_dependent_destroy:

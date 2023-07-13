@@ -71,10 +71,10 @@
               <td><%= kp.comment %></td>
               <td>
               <div class="btn-group text-center align-items-center" role="group" aria-label="">
-                <%= link_to 'Редактировать', edit_order_kp_path(@order, kp), title: 'Редактировать', class: 'btn btn-outline-secondary btn-sm' %>
-                <%= link_to 'Копировать', copy_order_kps_path(@order, kp), title: 'Копировать', class: 'btn btn-outline-secondary btn-sm' if can? :copy, Kp %>
+                <%= link_to 'Редактировать', edit_order_kp_path(@order, kp), title: 'Редактировать', class: "<%= kp_status_button(kp.status)%>" %>
+                <%= link_to 'Копировать', copy_order_kps_path(@order, kp), title: 'Копировать', class: "<%= kp_status_button(kp.status)%>" if can? :copy, Kp %>
                 <div class="btn-group" role="group">
-                  <button id="dropdownId" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Печать</button>
+                  <button id="dropdownId" type="button" class="<%= kp_status_button(kp.status)%> dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Печать</button>
                   <div class="dropdown-menu" aria-labelledby="dropdownId">
                   <%= link_to @order.companykp1.title, print1_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
                   <%= link_to @order.companykp2.title, print2_order_kps_path(@order, kp, :format => :pdf), class: 'dropdown-item', target: '_blank' %>
@@ -88,8 +88,8 @@
                   <%= link_to 'Пустое (xlsx)', print4_order_kps_path(@order, kp, :format => :xlsx), class: 'dropdown-item' %>
                   </div>
                 </div>
-                <%= link_to '1C(xlsx)', print1c_order_kps_path(@order, kp, :format => :xlsx), class: 'btn btn-outline-secondary btn-sm' %>
-                <%= link_to '<span class="oi oi-trash"></span>'.html_safe, [@order, kp], method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-outline-dark btn-sm' if current_user.admin? || current_user.manager? || current_user.grand_manager?%>
+                <%= link_to '1C(xlsx)', print1c_order_kps_path(@order, kp, :format => :xlsx), class: '<%= kp_status_button(kp.status)%>' %>
+                <%= link_to '<span class="oi oi-trash"></span>'.html_safe, [@order, kp], method: :delete, data: { confirm: 'Are you sure?' }, class: '<%= kp_status_button(kp.status)%>' if current_user.admin? || current_user.manager? || current_user.grand_manager?%>
               </div>
               </td>
             </tr>
