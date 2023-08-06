@@ -31,7 +31,7 @@ gem 'wicked_pdf'
 gem 'wkhtmltopdf-binary'
 gem 'combine_pdf'
 gem 'ru_propisju'
-# gem 'rails-jquery-autocomplete'
+gem 'rails-jquery-autocomplete'
 gem 'daemons'
 gem 'delayed_job_active_record'
 gem 'cancancan'
@@ -42,8 +42,8 @@ gem 'rubyzip'
 gem 'delayed_job_web'
 gem 'best_in_place', '~> 3.0.1'
 
-# gem 'bcrypt_pbkdf', '< 2.0', :require => false
-# gem 'ed25519', '~> 1.2', '>= 1.2.4'
+gem 'bcrypt_pbkdf', '< 2.0', :require => false
+gem 'ed25519', '~> 1.2', '>= 1.2.4'
 
 group :development do
   gem 'capistrano-rails'
