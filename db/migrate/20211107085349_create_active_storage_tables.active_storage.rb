@@ -1,5 +1,6 @@
 # This migration comes from active_storage (originally 20170806125915)
 class CreateActiveStorageTables < ActiveRecord::Migration[5.2]
+  enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
   def change
     create_table :active_storage_blobs, id: :uuid do |t|
       t.string   :key,        null: false
