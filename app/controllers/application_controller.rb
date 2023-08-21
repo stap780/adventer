@@ -40,6 +40,7 @@ class ApplicationController < ActionController::Base
       current_user.role.name == 'admin' ? true : false
   end
 
+
   def authenticate_admin!
     unless current_admin
       redirect_to root_path, alert: "У вас нет прав админа"

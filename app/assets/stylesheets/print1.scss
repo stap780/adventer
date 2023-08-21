@@ -1,13 +1,13 @@
 @font-face {
   font-family: 'CenturyGothic';
-  src: url("http://157.245.114.19/Century_Gothic.ttf")  format('truetype'), /* Safari, Android, iOS */
+  src: url("http://90.156.226.223/Century_Gothic.ttf") format('truetype'), /* Safari, Android, iOS */
 }
 @font-face {
   font-family: 'CenturyGothicRegular';
-  src: url("http://157.245.114.19/CenturyGothic.eot");
-  src: url("http://157.245.114.19/CenturyGothic.eot?#iefix") format('embedded-opentype'),
-    url("http://157.245.114.19/CenturyGothic.woff") format('woff'),
-    url("http://157.245.114.19/CenturyGothic.ttf") format('truetype');
+  src: url("http://90.156.226.223/CenturyGothic.eot");
+  src: url("http://90.156.226.223/CenturyGothic.eot?#iefix") format('embedded-opentype'),
+    url("http://90.156.226.223/CenturyGothic.woff") format('woff'),
+    url("http://90.156.226.223/CenturyGothic.ttf") format('truetype');
   font-weight: normal;
   font-style: normal;
 }
@@ -322,8 +322,9 @@ footer {
   height: 155px;
   font-size: 12px;
 }
-.footer-first-part li, .footer-second-part li, .footer-third-part td{
+.footer-first-part li, .footer-second-part li, .footer-third-part th {
   text-align: left;
+  color: black;
 }
 .footer-first-part img {
   max-width: 80%;

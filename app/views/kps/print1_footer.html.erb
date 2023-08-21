@@ -31,22 +31,18 @@
         <div class="label">Ваш менеджер</div>
         <table>
           <tr>
-            <th colspan="2" style="text-align: center;"><% if @kp.order.user.present? %><%= @kp.order.user.name %><% else %>Тест<% end %></th>
+            <th colspan="2" style="text-align: center;"><%= @kp.order.user.present? ? @kp.order.user.name : 'Тест' %></th>
             <tr>
               <th><%= render "pdf_image", image_link: '/kp_phone.png', image_class: ''  %></th>
-              <th><% if @kp.order.user.present? && @kp.order.user.phone.present? %><%= @kp.order.user.phone %><% else %>88005501314<% end %></th>
+              <th><%= @kp.order.user.present? && @kp.order.user.phone.present? ? @kp.order.user.phone : '88005501314'%></th>
             </tr>
             <tr>
               <th><%= render "pdf_image", image_link: '/kp_email.png', image_class: ''  %></th>
-              <th><% if @kp.order.user.present? && @kp.order.user.email.present? %><%= @kp.order.user.email %><% else %>info@adventer.su<% end %></th>
+              <th><%= @kp.order.user.present? && @kp.order.user.email.present? ? @kp.order.user.email : 'info@adventer.su' %></th>
             </tr>
           </tr>
         </table>
       </div>
     </div>
-<!-- <center>Invoice was created on a computer and is valid without the signature and seal.<span class="footerContent">test</span></center>
-<center>
-  <span style="margin-right: 60px;">__________________(подпись)</span><span style="margin-right: 60px;">__________________(подпись)</span>Стр. <span class="page"></span> из <span class="topage"></span>
-</center> -->
   </body>
 </html>

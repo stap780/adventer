@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title><%= @kp.title.present? ? @kp.title : "КП № #{@kp.id}" %> от <%= @kp.created_at.strftime("%d / %m / %Y")%></title>
+    <%= wicked_pdf_stylesheet_link_tag("print") %>
+    <%= wicked_pdf_javascript_include_tag("number_pages") %>
+  </head>
+  <body>
+    <header class="headerContent clearfix">
+        <div id="header-left-part">
+          <div class="logo-image">
+            <%=image_tag(  'http://localhost:3000/logo_little__200x70_.png' , class: '')  %>
+          </div>
+          <div class="header-left-part-bottom">
+            <table>
+              <thead>
+                <th><%= image_tag( 'http://localhost:3000/kp_phone.png', class: 'w25' ) %></th>
+                <th>88005501314</th>
+                <th><%=image_tag(  'http://localhost:3000/kp_email.png', class: 'w25' ) %></th>
+                <th><a href="mailto:info@adventer.su">info@adventer.su</a></th>
+                <th><%= image_tag(  'http://localhost:3000/kp_globus.png', class: 'w25' ) %></th>
+                <th>www.adventer.su</th>
+              </thead>
+            </table>
+          </div>
+        </div>
+        <div id="header-right-part">
+          <h4 class="name"><%= @our_company.fulltitle.camelize%></h4>
+          <div><%= @our_company.uraddress%></div>
+          <div>ИНН: <%= @our_company.inn%></div>
+          <div>КПП: <%= @our_company.kpp%></div>
+        </div>
+    </header>
+
+    <main>
+
+      <div class="kp-title">
+        <center>
+          <h1>Коммерческое предложение</h1>
+          <h3><%= @kp.title if @kp.title.present?%></h3>
+        </center>
+      </div>
+
+      <table id="kp_items" border="1" cellspacing="0" cellpadding="0" class="alwaysbreak"<% if @kp.kp_products.count > 5 %> style="height: 247mm;"<% end %> >
+        <thead>
+          <tr class="kp_items_header">
+            <th class="">№</th>
+            <th class="">Фото</th>
+            <th class="" style="min-width: 80px;">Артикул</th>
+            <th class="">Наименование товара</th>
+            <th class="" style="min-width: 100px;">Цена</th>
+            <th class="" style="max-width: 40px;">Кол.</th>
+            <th class="" style="min-width: 110px;">Сумма</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @kp.kp_products.each_with_index do |kp, i| %>
+          <tr>
+            <td class="item-nu"><%= (i+1) %></td>
+            <td class="item-image">              
+              <% image = kp.image.attached? ? kp.image : kp.product.images.first %>
+              <% if image.respond_to?(:blob)%>
+              <% save_path = Rails.root.join('public/tmp/pdf', image.id.to_s) %>
+                  <% File.open(save_path, 'wb') do |file| %>
+                    <% file << image.blob.download%>
+                  <% end%>
+              <%= image_tag("http://localhost:3000/"+save_path.to_s.split('public/').last, class: 'w45 image-product-contain')%>
+              <% end %>
+            </td>
+            <td class="item-sku"><%= kp.product.sku.truncate(20) if kp.product.sku.present? %></td>
+            <td class="item-title"><%= kp.product.title %><br><%= kp.desc if kp.use_desc == true %></td>
+            <!-- <td class="qty">шт</td> -->
+            <td class="item-price"><%= kp.price %> руб</td>
+            <td class="item-qt"><%= kp.quantity %></td>
+            <td class="item-sum"><%= (kp.sum.truncate(2).to_s("F") + "00")[ /.*\..{2}/ ] %> руб</td>
+          </tr>
+          <% end %>
+          <tr>
+            <td colspan="4"></td>
+            <td class="item-itogo" colspan="2">ИТОГО</td>
+            <td class="item-itogo-sum"><%= (@kp.kp_products.sum(:sum).truncate(2).to_s("F") + "00")[ /.*\..{2}/ ] %> руб</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="wrapper-notice">
+      <div id="text_dostavka"><%= @kp.text_dostavka if @kp.text_dostavka.present? %></div>
+       <div id="text_sborka"><%= @kp.text_sborka if @kp.text_sborka.present? %></div>
+        <div id="thanks">Организация работает без НДС на основании ст. 346.11 НК РФ.<br>Цены по данному коммерческому предложению действительны в течение 14 дней.</div>
+        <div id="notices">
+          <!-- <div>NOTICE:</div> -->
+          <div class="notice">
+            <div class="text">Менеджер</div>
+            <div class="podpis">
+              <% image = @kp.order.user.avatar if @kp.order.user.present? && @kp.order.user.avatar.attached?%>
+              <% if image.respond_to?(:blob)%>
+                <% save_path = Rails.root.join('public/tmp/pdf', image.id.to_s) %>
+                <% File.open(save_path, 'wb') do |file| %>
+                  <% file << image.blob.download%>
+                <% end%>
+                <%= image_tag("http://localhost:3000/"+save_path.to_s.split('public/').last, class: '')%>
+              <% end %>
+              </div>
+              <div class="fio"><%= @kp.order.user.present? ? @kp.order.user.name : "Тест" %></div>
+            </div>
+        </div>
+        <div class="notice-date">Дата <%= @kp.created_at.strftime("%d / %m / %Y")%></div>
+        <div class="notice-stamp">М П
+          <% image = @our_company.images.first if @our_company.images.attached?%>
+          <% if image.respond_to?(:blob)%>
+            <% save_path = Rails.root.join('public/tmp/pdf', image.id.to_s) %>
+            <% File.open(save_path, 'wb') do |file| %>
+              <% file << image.blob.download%>
+            <% end%>
+            <%= image_tag("http://localhost:3000/"+save_path.to_s.split('public/').last, class: 'pechat')%>
+          <% end %>
+        </div>
+      </div>
+
+    </main>
+    <div class="footer-banner clearfix">
+      <div class="footer-first-part">
+        <%= image_tag( 'http://localhost:3000/kp_zagolovok1.png', class: '' ) %>
+      <ul>
+          <li>мебель для ДОУ и школ</li>
+          <li>Фотообои, интерьерное оформление ДОУ и школ</li>
+          <li>стенды, таблички, наклейки</li>
+          <li>декорации, оформление уголков и зон в ДОУ и школах</li>
+          <li>уличное оборудование</li>
+      </ul>
+      </div>
+      <div class="footer-second-part">
+        <%= image_tag( 'http://localhost:3000/kp_zagolovok2.png', class: '')  %>
+      <ul>
+          <li>уличное игровое оборудование</li>
+          <li>посуда и хоз товары</li>
+          <li>игровое развивающее оборудование</li>
+          <li>интерактивное оборудование</li>
+          <li>оснащение для классов</li>
+      </ul>
+      </div>
+      <div class="footer-third-part">
+        <div class="label">Ваш менеджер</div>
+        <table>
+          <tr>
+            <th colspan="2" style="text-align: center;"><%= @kp.order.user.present? ? @kp.order.user.name : 'Тест' %></th>
+            <tr>
+              <th><%= image_tag( 'http://localhost:3000/kp_phone.png', class: '' ) %></th>
+              <th><%= @kp.order.user.present? && @kp.order.user.phone.present? ? @kp.order.user.phone : '88005501314'%></th>
+            </tr>
+            <tr>
+              <th><%= image_tag(  'http://localhost:3000/kp_email.png', class: '' ) %></th>
+              <th><%= @kp.order.user.present? && @kp.order.user.email.present? ? @kp.order.user.email : 'info@adventer.su' %></th>
+            </tr>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
