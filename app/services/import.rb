@@ -368,7 +368,7 @@ class Services::Import
       rescue Exception => e
         puts "Error caught " + e.to_s
         #next
-        cat[:image] = "http://157.245.114.19/logo_little__200x70_.png"
+        cat[:image] = "http://90.156.226.223/logo_little__200x70_.png"
         puts "image " + cat[:image].to_s
       else
         cat[:image] = URI.encode(search_cat.image.original_url)
