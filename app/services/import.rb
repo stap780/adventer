@@ -57,6 +57,7 @@ class Services::Import
       images = row["Изображения"].present? ? row["Изображения"].split(' ').reject(&:blank?) : []
       # puts "images кол-во - #{images.count.to_s}"
       # puts images.to_s
+      product.update!(save_data)
       if images.present?
         images.first(1).each do |img_link|
           # puts img_link
