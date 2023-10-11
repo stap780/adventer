@@ -52,8 +52,7 @@ class Services::Import
                 }
 
       search_product = Product.find_by_insvarid(save_data[:insvarid])
-      product = search_product.present? ? search_product : 
-                                          Product.create!(save_data)
+      product = search_product.present? ? search_product : Product.create!(save_data)
       puts "import product id - "+product.id.to_s
       images = row["Изображения"].present? ? row["Изображения"].split(' ').reject(&:blank?) : []
       # puts "images кол-во - #{images.count.to_s}"
@@ -233,26 +232,30 @@ class Services::Import
               else
                 sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
               end
-              cat_products.each_with_index do |pr_id, index|
-                pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
-                if pr.present?
-                  data = Services::Import.collect_product_data_from_xml(pr,excel_price)
-                  if excel_price.rrc == true
-                    discount = data[:price]-data[:price]*0.2
-                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
-                  else
-                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+              cat_products.each_with_index do |var_id, index|
+              #pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
+              offer = all_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+              # offers = all_offers.select{|offer| offer if offer["group_id"] == pr_id.to_s}
+              if offer.present?
+                # offers.each do |offer|
+                    data = Services::Import.collect_product_data_from_xml(offer,excel_price)
+                    if excel_price.rrc == true
+                      discount = data[:price]-data[:price]*0.2
+                      pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
+                    else
+                      pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                    end
+                    pr_row = sheet.add_row pr_data, style: pr_style, height: 150
+                    hyp_ref = "D#{(pr_row.row_index+1).to_s}"
+                    sheet.add_hyperlink location: data[:url], ref: hyp_ref
+                    sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
+                      image.start_at 2, pr_row.row_index
+                      image.end_at 3, pr_row.row_index+1
+                      image.anchor.from.rowOff = 10_000
+                      image.anchor.from.colOff = 10_000
+                    end
                   end
-                  pr_row = sheet.add_row pr_data, style: pr_style, height: 150
-                  hyp_ref = "D#{(pr_row.row_index+1).to_s}"
-                  sheet.add_hyperlink location: data[:url], ref: hyp_ref
-                  sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
-                    image.start_at 2, pr_row.row_index
-                    image.end_at 3, pr_row.row_index+1
-                    image.anchor.from.rowOff = 10_000
-                    image.anchor.from.colOff = 10_000
-                  end
-                end           
+                # end           
               end
             else
               puts "second_cat don't have products"
@@ -275,10 +278,13 @@ class Services::Import
             else
               sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
             end
-            cat_products.each_with_index do |pr_id, index|
-              pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
-              if pr.present?
-                  data = Services::Import.collect_product_data_from_xml(pr,excel_price)
+            cat_products.each_with_index do |var_id, index|
+              #pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
+              offer = all_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+              # offers = all_offers.select{|offer| offer if offer["group_id"] == pr_id.to_s}
+              if offer.present?
+                # offers.each do |offer|
+                  data = Services::Import.collect_product_data_from_xml(offer,excel_price)
                   if excel_price.rrc == true
                     #discount = data[:price]-data[:price]*0.2
                     #pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
@@ -299,6 +305,7 @@ class Services::Import
                     image.anchor.from.rowOff = 10_000
                     image.anchor.from.colOff = 10_000
                   end
+                # end
               end          
             end
           end
@@ -314,13 +321,13 @@ class Services::Import
         end
         sheet.add_hyperlink( location: "'Навигация по каталогу'!A7", target: :sheet, ref: 'B1' )
         if excel_price.rrc == true
-        sheet.column_widths 2,10,25,40,40,40,30,30,2
+          sheet.column_widths 2,10,25,40,40,40,30,30,2
         else
-        sheet.column_widths 2,10,25,40,40,40,30,2
+          sheet.column_widths 2,10,25,40,40,40,30,2
         end
         puts "row_index_for_titles_array => "+row_index_for_titles_array.to_s
         if excel_price.rrc == true
-        merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"H"+a.to_s }
+          merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"H"+a.to_s }
         else
           merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
         end
@@ -384,17 +391,17 @@ class Services::Import
     StringIO.new(response.body)
   end
 
-  def self.collect_product_data_from_xml(pr, excel_price)
-    picture_link = pr.css('picture').size > 1 ? pr.css('picture').first.text : pr.css('picture').text
+  def self.collect_product_data_from_xml(offer, excel_price)
+    picture_link = offer.css('picture').size > 1 ? offer.css('picture').first.text : offer.css('picture').text
     data = {
-            id: pr['id'],
-            title: pr.css('model').text.present? ? pr.css('model').text : ' ',
-            sku: pr.css('vendorCode').text.present? ? pr.css('vendorCode').text : pr['id'],
-            desc: pr.css('description').text.present? ? pr.css('description').text : ' ',
-            price: Services::Import.price_shift(excel_price, pr.css('price').text),
-            rrc: pr.css('price').text,
-            url: pr.css('url').text,
-            image: Services::Import.process_image(picture_link, pr['id'])
+            id: offer['id'],
+            title: offer.css('model').text.present? ? offer.css('model').text : ' ',
+            sku: offer.css('vendorCode').text.present? ? offer.css('vendorCode').text : offer['id'],
+            desc: offer.css('description').text.present? ? offer.css('description').text : ' ',
+            price: Services::Import.price_shift(excel_price, offer.css('price').text),
+            rrc: offer.css('price').text,
+            url: offer.css('url').text,
+            image: Services::Import.process_image(picture_link, offer['id'])
           }
     data
   end
@@ -436,7 +443,13 @@ class Services::Import
   end
 
   def self.collect_product_ids(cat_id)
+    var_ids = []
     pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
+    pr_ids.each do |pd_id|
+      pr_variants_ids = InsalesApi::Product.find(pd_id).variants.map(&:id)
+      var_ids.push(pr_variants_ids)
+    end
+    var_ids.flatten
   end
 
   def self.collect_our_product_ids(cat_id)
