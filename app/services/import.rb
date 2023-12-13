@@ -98,13 +98,13 @@ class Services::Import
     data = Nokogiri::XML(open(download_path))
 
     categories = data.xpath("//category").map{|c| {id: c["id"], title: c.text, parent_id: c["parentId"]}}
+    excel_price_offers =  data.xpath("//offer")
 
     all_categories = Services::Import.collect_main_list_cat_info(categories)
 
     select_main_cat = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? nil : all_categories.select{|c| c[:parent_id] == nil}
 
-    categories_for_list = select_main_cat.present? ? all_categories.select{|c| c[:parent_id] == select_main_cat[0][:id]} : 
-                                                     all_categories
+    categories_for_list = select_main_cat.present? ? all_categories.select{|c| c[:parent_id] == select_main_cat[0][:id]} : all_categories
     p = Axlsx::Package.new
     wb = p.workbook
     # style section
@@ -217,13 +217,13 @@ class Services::Import
         if second_cats.present?
           puts "second_cats.present? => "+second_cats.present?.to_s
           second_cats.each do |s_cat|
+            puts "second_cat id => "+s_cat[:id].to_s
             if excel_price.our_product == true
-              cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(s_cat[:id]).take(15) :
-              Services::Import.collect_our_product_ids(s_cat[:id])
+              cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(s_cat[:id], excel_price_offers).take(15) : Services::Import.collect_our_product_ids(s_cat[:id], excel_price_offers)
             else
-              cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(s_cat[:id]).take(15) :
-                                                      Services::Import.collect_product_ids(s_cat[:id])
+              cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(s_cat[:id]).take(15) : Services::Import.collect_product_ids(s_cat[:id])
             end
+            puts "second_cat present and cat_products => "+cat_products.to_s
             if cat_products.present?
               puts "second_cat have products"
               cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
@@ -265,11 +265,9 @@ class Services::Import
         end
         if !second_cats.present?
           if excel_price.our_product == true
-            cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(cat[:id]).take(15) :
-            Services::Import.collect_our_product_ids(cat[:id])
+            cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(cat[:id], excel_price_offers).take(15) : Services::Import.collect_our_product_ids(cat[:id], all_ofexcel_price_offersfers)
           else
-            cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(15) :
-                                                    Services::Import.collect_product_ids(cat[:id])
+            cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id]).take(15) : Services::Import.collect_product_ids(cat[:id])
           end
           if cat_products.present?
             cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
@@ -446,28 +444,39 @@ class Services::Import
   def self.collect_product_ids(cat_id)
     var_ids = []
     pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
+    puts "collect_product_ids pr_ids => "+pr_ids.count.to_s
     pr_ids.each do |pd_id|
       pr_variants_ids = InsalesApi::Product.find(pd_id).variants.map(&:id)
       var_ids.push(pr_variants_ids)
     end
+    puts "var_ids.flatten => "+var_ids.flatten.to_s
     var_ids.flatten
   end
 
-  def self.collect_our_product_ids(cat_id)
-    all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
-    pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
-    new_pr_ids = []
-    pr_ids.each do |pr_id|
-      pr = all_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
-                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
-                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
-                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
-                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
-                                                  offer["id"] == pr_id.to_s && offer.css('vendorCode').text.include?('УК')
+  def self.collect_our_product_ids(cat_id, excel_price_offers)
+    puts "start collect_our_product_ids"
+    puts "cat_id => "+cat_id.to_s
+    # all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
+    puts "all_offers count => "+excel_price_offers.count.to_s
+    all_offers = excel_price_offers
+    # pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
+    # puts "collect_our_product_ids pr_ids => "+pr_ids.count.to_s
+    var_ids = Services::Import.collect_product_ids(cat_id)
+    new_var_ids = []
+    var_ids.each do |var_id|
+      puts "collect_our_product_ids var_id - "+var_id.to_s
+      var = all_offers.select{ |offer| offer if offer.css('vendorCode').text.present? && 
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
                                                       }[0]
-      new_pr_ids.push(pr['id']) if !pr.nil?
+      puts "var.nil? - "+var.nil?.to_s
+      new_var_ids.push(var['id']) if !var.nil?
     end
-    new_pr_ids
+    puts "new_var_ids => "+new_var_ids.to_s
+    new_var_ids
   end
 
   def self.load_all_catalog_xml

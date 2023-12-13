@@ -6,7 +6,7 @@ class ImportExcelPriceJob < ApplicationJob
   end
 
   discard_on(StandardError) do |job, error|
-           #AnyExceptionNotifier.caught(error) - это из примера
+    # AnyExceptionNotifier.caught(error) - это из примера
     # puts job.inspect.to_s
     # puts job.arguments.to_s
     job.arguments.first.update!(file_status: 'end')
@@ -22,4 +22,5 @@ class ImportExcelPriceJob < ApplicationJob
     Services::Import.excel_price(excel_price)
       # raise StandardError, "error during ImportExcelPriceJob perform"
   end
+  
 end

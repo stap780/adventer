@@ -40,6 +40,7 @@
   <thead>
     <tr class="text-secondary">
       <th><%= check_box_tag 'selectAll', 'selectAll'%></th>
+      <th>Дата</th>
       <th>Название</th>
       <th>Ссылка</th>
       <th>Комментарий</th>
@@ -51,6 +52,7 @@
     <% @excel_prices.each do |excel_price| %>
       <tr class="align-middle">
         <td><%= check_box_tag "excel_price_ids[]", excel_price.id %></td>
+        <td><%= excel_price.created_at.strftime("%d/%m/%Y") %></td>
         <td><%= excel_price.title %></td>
         <td><%= excel_price.link %></td>
         <td><%= excel_price.comment %></td>
