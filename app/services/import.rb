@@ -84,9 +84,9 @@ class Services::Import
     require 'open-uri'
     puts "===>>>> СТАРТ import excel_price #{Time.now.to_s}"
     
-    puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
-    all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
-    puts "=====>>>> Finish import all_offers #{Time.now.to_s}"    
+    # puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
+    # all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
+    # puts "=====>>>> Finish import all_offers #{Time.now.to_s}"    
     
     excel_price.update!(file_status: 'process')
     File.delete(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx") if File.file?(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx").present?
@@ -235,8 +235,8 @@ class Services::Import
               end
               cat_products.each_with_index do |var_id, index|
               #pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
-              offer = all_offers.select{|off| off if off["id"] == var_id.to_s}[0]
-              # offers = all_offers.select{|offer| offer if offer["group_id"] == pr_id.to_s}
+              # offer = all_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+              offer = excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
               if offer.present?
                 # offers.each do |offer|
                     data = Services::Import.collect_product_data_from_xml(offer,excel_price)
@@ -279,8 +279,8 @@ class Services::Import
             end
             cat_products.each_with_index do |var_id, index|
               #pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
-              offer = all_offers.select{|off| off if off["id"] == var_id.to_s}[0]
-              # offers = all_offers.select{|offer| offer if offer["group_id"] == pr_id.to_s}
+              # offer = all_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+              offer = excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
               if offer.present?
                 # offers.each do |offer|
                   data = Services::Import.collect_product_data_from_xml(offer,excel_price)
@@ -442,50 +442,29 @@ class Services::Import
 
   def self.collect_product_ids(cat_id, excel_price_offers)
     var_ids = []
-    # pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
-    # puts "collect_product_ids pr_ids => "+pr_ids.count.to_s
-    # pr_ids.each do |pd_id|
-    #   pr_variants_ids = InsalesApi::Product.find(pd_id).variants.map(&:id)
-    #   var_ids.push(pr_variants_ids)
-    # end
-    # puts "var_ids.flatten => "+var_ids.flatten.to_s
-    # var_ids.flatten
     excel_price_offers.each do |offer|
-      var_ids.push(offer['id']) if offer.css('categoryId').text == cat_id
+      var_ids.push(offer['id']) if offer.css('categoryId').text == cat_id.to_s
     end
+    puts "var_ids => "+var_ids.to_s
     var_ids
   end
 
   def self.collect_our_product_ids(cat_id, excel_price_offers)
     puts "start collect_our_product_ids"
-    puts "cat_id => "+cat_id.to_s
-    # all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
-    # puts "excel_price_offers count => "+excel_price_offers.count.to_s
+    puts " === cat_id => "+cat_id.to_s
     all_offers = excel_price_offers
-    # pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
-    # puts "collect_our_product_ids pr_ids => "+pr_ids.count.to_s
-    #var_ids = Services::Import.collect_product_ids(cat_id)
     new_var_ids = []
-    # var_ids.each do |var_id|
-    #   puts "collect_our_product_ids var_id - "+var_id.to_s
-    #   var = all_offers.select{ |offer| offer if offer.css('vendorCode').text.present? && 
-    #                                               offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
-    #                                               offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
-    #                                               offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
-    #                                               offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
-    #                                               offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
-    #                                                   }[0]
-    #   puts "var.nil? - "+var.nil?.to_s
-    #   new_var_ids.push(var['id']) if !var.nil?
-    # end
     excel_price_offers.each do |offer|
-      if offer.css('vendorCode').text.present? && offer.css('categoryId').text == cat_id && 
-         offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
-         offer.css('vendorCode').text.include?('АДВ') ||
-         offer.css('vendorCode').text.include?('АДВСМ') ||
-         offer.css('vendorCode').text.include?('ФО') ||
-         offer.css('vendorCode').text.include?('УК')
-        new_var_ids.push(offer['id'])
+      if offer.css('categoryId').text == cat_id.to_s
+        if offer.css('vendorCode').text.present?
+          if offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
+            offer.css('vendorCode').text.include?('АДВ') ||
+            offer.css('vendorCode').text.include?('АДВСМ') ||
+            offer.css('vendorCode').text.include?('ФО') ||
+            offer.css('vendorCode').text.include?('УК')
+            new_var_ids.push(offer['id'])
+          end
+        end
       end
     end
     puts "new_var_ids => "+new_var_ids.to_s
