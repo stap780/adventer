@@ -219,9 +219,9 @@ class Services::Import
           second_cats.each do |s_cat|
             puts "second_cat id => "+s_cat[:id].to_s
             if excel_price.our_product == true
-              cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(s_cat[:id], excel_price_offers).take(15) : Services::Import.collect_our_product_ids(s_cat[:id], excel_price_offers)
+              cat_products =  Rails.env.development? ? Services::Import.collect_our_variant_ids(s_cat[:id], excel_price_offers).take(15) : Services::Import.collect_our_variant_ids(s_cat[:id], excel_price_offers)
             else
-              cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(s_cat[:id], excel_price_offers).take(15) : Services::Import.collect_product_ids(s_cat[:id], excel_price_offers)
+              cat_products =  Rails.env.development? ? Services::Import.collect_variant_ids(s_cat[:id], excel_price_offers).take(15) : Services::Import.collect_variant_ids(s_cat[:id], excel_price_offers)
             end
             # puts "second_cat present and cat_products => "+cat_products.to_s
             if cat_products.present?
@@ -265,9 +265,9 @@ class Services::Import
         end
         if !second_cats.present?
           if excel_price.our_product == true
-            cat_products =  Rails.env.development? ? Services::Import.collect_our_product_ids(cat[:id], excel_price_offers).take(15) : Services::Import.collect_our_product_ids(cat[:id], excel_price_offers)
+            cat_products =  Rails.env.development? ? Services::Import.collect_our_variant_ids(cat[:id], excel_price_offers).take(15) : Services::Import.collect_our_variant_ids(cat[:id], excel_price_offers)
           else
-            cat_products =  Rails.env.development? ? Services::Import.collect_product_ids(cat[:id], excel_price_offers).take(15) : Services::Import.collect_product_ids(cat[:id], excel_price_offers)
+            cat_products =  Rails.env.development? ? Services::Import.collect_variant_ids(cat[:id], excel_price_offers).take(15) : Services::Import.collect_variant_ids(cat[:id], excel_price_offers)
           end
           if cat_products.present?
             cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
@@ -440,35 +440,54 @@ class Services::Import
     new_price
   end
 
-  def self.collect_product_ids(cat_id, excel_price_offers)
+  def self.collect_variant_ids(cat_id, excel_price_offers)
     var_ids = []
-    excel_price_offers.each do |offer|
-      var_ids.push(offer['id']) if offer.css('categoryId').text == cat_id.to_s
+    pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
+    pr_ids.each do |pd_id|
+      pr_variants_ids = InsalesApi::Product.find(pd_id).variants.map(&:id)
+      var_ids.push(pr_variants_ids)
     end
-    puts "var_ids => "+var_ids.to_s
-    var_ids
+    puts "var_ids => "+var_ids.flatten.to_s
+    var_ids.flatten
+    # excel_price_offers.each do |offer|
+    #   var_ids.push(offer['id']) if offer.css('categoryId').text == cat_id.to_s
+    # end
+    # puts "var_ids => "+var_ids.to_s
+    # var_ids
   end
 
-  def self.collect_our_product_ids(cat_id, excel_price_offers)
-    puts "start collect_our_product_ids"
+  def self.collect_our_variant_ids(cat_id, excel_price_offers)
+    puts "start collect_our_variant_ids"
     puts " === cat_id => "+cat_id.to_s
-    all_offers = excel_price_offers
+    var_ids = Services::Import.collect_variant_ids(cat_id, excel_price_offers)
     new_var_ids = []
-    excel_price_offers.each do |offer|
-      if offer.css('categoryId').text == cat_id.to_s
-        if offer.css('vendorCode').text.present?
-          if offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
-            offer.css('vendorCode').text.include?('АДВ') ||
-            offer.css('vendorCode').text.include?('АДВСМ') ||
-            offer.css('vendorCode').text.include?('ФО') ||
-            offer.css('vendorCode').text.include?('УК')
-            new_var_ids.push(offer['id'])
-          end
-        end
-      end
+    var_ids.each do |var_id|
+      var = excel_price_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
+                                                      }[0]
+        new_var_ids.push(var['id']) if !var.nil?
     end
-    puts "new_var_ids => "+new_var_ids.to_s
     new_var_ids
+
+    # excel_price_offers.each do |offer|
+    #   if offer.css('categoryId').text == cat_id.to_s
+    #     if offer.css('vendorCode').text.present?
+    #       if offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
+    #         offer.css('vendorCode').text.include?('АДВ') ||
+    #         offer.css('vendorCode').text.include?('АДВСМ') ||
+    #         offer.css('vendorCode').text.include?('ФО') ||
+    #         offer.css('vendorCode').text.include?('УК')
+    #         new_var_ids.push(offer['id'])
+    #       end
+    #     end
+    #   end
+    # end
+    # puts "new_var_ids => "+new_var_ids.to_s
+    # new_var_ids
   end
 
   def self.load_all_catalog_xml
