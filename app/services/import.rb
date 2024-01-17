@@ -504,6 +504,7 @@ private
     puts "start process_image"
     image = ''
     if link.present?
+      puts "image link => "+link.to_s
       begin
         check = open(link)
       rescue OpenURI::HTTPError
