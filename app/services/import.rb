@@ -33,7 +33,7 @@ class Services::Import
   end
 
   def call
-    #get_insales_excel
+    get_insales_excel
     collect_data_from_excel
     create_xlsx
   end
