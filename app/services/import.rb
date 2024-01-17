@@ -502,28 +502,33 @@ private
 
   def process_image(link, file_name)
     puts "start process_image"
-    image = ''
-    if link.present?
-      puts "image link => "+link.to_s
-      begin
-        check = open(link)
-      rescue OpenURI::HTTPError
-        puts  'process_image OpenURI::HTTPError'
-        puts link
-      rescue Net::OpenTimeout
-        puts 'process_image Net::OpenTimeout'
-        puts link
-      else
-        result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
-        image_magic = MiniMagick::Image.open(result.path)
-        image_magic.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
-        image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
-        # tempfile = ImageProcessing::MiniMagick.source(link.gsub('https','http')).saver(quality: 85).convert('jpg').resize_and_pad!(200, 200, background: "#FFFFFF", gravity: 'center')
-        # image = tempfile.path
+    image_path = Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg"
+    if File.file?(image_path).present?
+      image_path
+    else
+      image = ''
+      if link.present?
+        puts "image link => "+link.to_s
+        begin
+          check = open(link)
+        rescue OpenURI::HTTPError
+          puts  'process_image OpenURI::HTTPError'
+          puts link
+        rescue Net::OpenTimeout
+          puts 'process_image Net::OpenTimeout'
+          puts link
+        else
+          result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
+          image_magic = MiniMagick::Image.open(result.path)
+          image_magic.write(image_path)
+          image = File.expand_path(image_path)
+          # tempfile = ImageProcessing::MiniMagick.source(link.gsub('https','http')).saver(quality: 85).convert('jpg').resize_and_pad!(200, 200, background: "#FFFFFF", gravity: 'center')
+          # image = tempfile.path
+        end
       end
+      puts "finish process_image"
+      image
     end
-    puts "finish process_image"
-    image
   end
 
   def price_shift(excel_price, price)
@@ -552,7 +557,7 @@ private
             price: price_shift(excel_price, offer.css('price').text),
             rrc: offer.css('price').text,
             url: offer.css('url').text,
-            image: process_image(picture_link, offer['id'])
+            image: process_image(picture_link, offer['group_id'])
           }
     data
   end
