@@ -19,7 +19,7 @@ class ImportExcelPriceJob < ApplicationJob
   def perform(excel_price)
     # Do something later
     # puts "during ImportExcelPriceJob perform"
-    Services::Import.excel_price(excel_price)
+    Services::Import.new(excel_price).call
       # raise StandardError, "error during ImportExcelPriceJob perform"
   end
   

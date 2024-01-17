@@ -1,5 +1,5 @@
 class Services::Import
-
+  require 'open-uri'
   DownloadPath = Rails.env.development? ? "#{Rails.root}" : "/var/www/adventer/shared"
   MainText = 'Общество с ограниченной ответственностью «Адвентер»
 
@@ -26,7 +26,18 @@ class Services::Import
         
   Упрощенная система налогообложения  – без НДС.'
 
+  def initialize(excel_price)
+    @excel_price = excel_price
+    @file_data = nil
+    @excel_path = Services::Import::DownloadPath+"/public/#{@excel_price.id.to_s}_file.xlsx"
+  end
 
+  def call
+    #get_insales_excel
+    collect_data_from_excel
+    create_xlsx
+  end
+  
   def self.product
     require 'open-uri'
     puts '=====>>>> СТАРТ InSales EXCEL '+Time.now.to_s
@@ -80,31 +91,57 @@ class Services::Import
   	# ProductMailer.notifier_process(current_process).deliver_now
   end
   
-  def self.excel_price(excel_price)
-    require 'open-uri'
+  def self.download_remote_file(url)
+    ascii_url = URI.encode(url)
+    response = Net::HTTP.get_response(URI.parse(ascii_url))
+    StringIO.new(response.body)
+  end
+  
+  def self.load_all_catalog_xml
+    input_path = "https://adventer.su/marketplace/1923917.xml"
+    download_path = Services::Import::DownloadPath+"/public/1923917.xml"
+    File.delete(download_path) if File.file?(download_path).present?
+
+    RestClient.get( input_path ) { |response, request, result, &block|
+      case response.code
+      when 200
+        f = File.new(download_path, "wb")
+        f << response.body
+        f.close
+        puts "load_all_catalog_xml load and write"
+      else
+        response.return!(&block)
+      end
+      }
+  end
+
+private
+
+  def create_xlsx
+
     puts "===>>>> СТАРТ import excel_price #{Time.now.to_s}"
     
     # puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
     # all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
     # puts "=====>>>> Finish import all_offers #{Time.now.to_s}"    
     
-    excel_price.update!(file_status: 'process')
-    File.delete(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx") if File.file?(Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx").present?
-    url = excel_price.link
-		filename = url.split('/').last
+    @excel_price.update!(file_status: 'process')
+    File.delete(@excel_path) if File.file?(@excel_path).present?
+    url = @excel_price.link
+    filename = url.split('/').last
     download = open(url)
-		download_path = Services::Import::DownloadPath+"/public/"+filename
-		IO.copy_stream(download, download_path)
+    download_path = Services::Import::DownloadPath+"/public/"+filename
+    IO.copy_stream(download, download_path)
     data = Nokogiri::XML(open(download_path))
 
     categories = data.xpath("//category").map{|c| {id: c["id"], title: c.text, parent_id: c["parentId"]}}
     excel_price_offers = data.xpath("//offer")
 
-    all_categories = Services::Import.collect_main_list_cat_info(categories)
+    all_categories = collect_main_list_cat_info(categories)
 
-    select_main_cat = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? nil : all_categories.select{|c| c[:parent_id] == nil}
+    select_main_cats = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? nil : all_categories.select{|c| c[:parent_id] == nil}
 
-    categories_for_list = select_main_cat.present? ? all_categories.select{|c| c[:parent_id] == select_main_cat[0][:id]} : all_categories
+    categories_for_list = select_main_cats.present? ? select_main_cats : all_categories.select{|c| c[:parent_id] == select_main_cats[0][:id]}  #all_categories
     p = Axlsx::Package.new
     wb = p.workbook
     # style section
@@ -128,7 +165,7 @@ class Services::Import
     notice_main_label = s.add_style bg_color: 'FFFFFF', alignment: { horizontal: :center , vertical: :top }
     notice_label = s.add_style bg_color: 'FDE9D9', alignment: { horizontal: :center , vertical: :center}, b: true, sz: 12
     notice_b = s.add_style bg_color: 'FDE9D9', alignment: { horizontal: :center , vertical: :center }, sz: 12
-    if excel_price.rrc == true
+    if @excel_price.rrc == true
       pr_style = [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money,money]
     else
       pr_style = [nil,pr_index,pr_pict,pr_title,pr_sku,pr_descr,money]
@@ -154,7 +191,7 @@ class Services::Import
     notice_text_main_sheet = Axlsx::RichText.new
     notice_text_main_sheet.add_run('Подсказка: ', b: true, color: 'EA4488')
     notice_text_main_sheet.add_run('для того чтобы открыть нужную категорию нажмите на название или вкладку')
-  
+
     puts "start create main sheet"
     wb.add_worksheet(name: 'Навигация по каталогу') do |sheet|
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
@@ -178,7 +215,7 @@ class Services::Import
           sheet.rows[row_end+1].cells[column_end].value = cat[:title]
           sheet.rows[row_end+1].cells[column_end].style = main_label
           file_name = cat[:id]
-          image = Services::Import.process_image(cat[:image], file_name)
+          image = process_image(cat[:image], file_name)
           sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
             image.width = 200
             image.height = 200
@@ -218,17 +255,18 @@ class Services::Import
           puts "second_cats.present? => "+second_cats.present?.to_s
           second_cats.each do |s_cat|
             puts "second_cat id => "+s_cat[:id].to_s
-            if excel_price.our_product == true
-              cat_products =  Rails.env.development? ? Services::Import.collect_our_variant_ids(s_cat[:id], excel_price_offers).take(15) : Services::Import.collect_our_variant_ids(s_cat[:id], excel_price_offers)
+            puts "second_cat title => "+s_cat[:title].to_s
+            if @excel_price.our_product == true
+              cat_products =  Rails.env.development? ? collect_our_variant_ids(s_cat[:id], excel_price_offers) : collect_our_variant_ids(s_cat[:id], excel_price_offers)
             else
-              cat_products =  Rails.env.development? ? Services::Import.collect_variant_ids(s_cat[:id], excel_price_offers).take(15) : Services::Import.collect_variant_ids(s_cat[:id], excel_price_offers)
+              cat_products =  Rails.env.development? ? collect_variant_ids(s_cat[:id], excel_price_offers) : collect_variant_ids(s_cat[:id], excel_price_offers)
             end
             # puts "second_cat present and cat_products => "+cat_products.to_s
             if cat_products.present?
               puts "second_cat have products"
               cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
               row_index_for_titles_array.push(cat_title_row.row_index+1)
-              if excel_price.rrc == true
+              if @excel_price.rrc == true
                 sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой','Цена РРЦ'], style: tbl_header, height: 20
               else
                 sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
@@ -239,8 +277,8 @@ class Services::Import
               offer = excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
               if offer.present?
                 # offers.each do |offer|
-                    data = Services::Import.collect_product_data_from_xml(offer,excel_price)
-                    if excel_price.rrc == true
+                    data = collect_product_data_from_xml(offer,@excel_price)
+                    if @excel_price.rrc == true
                       discount = data[:price]-data[:price]*0.2
                       pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
                     else
@@ -264,15 +302,16 @@ class Services::Import
           end
         end
         if !second_cats.present?
-          if excel_price.our_product == true
-            cat_products =  Rails.env.development? ? Services::Import.collect_our_variant_ids(cat[:id], excel_price_offers).take(15) : Services::Import.collect_our_variant_ids(cat[:id], excel_price_offers)
+          puts "second_cats.present? => "+second_cats.present?.to_s
+          if @excel_price.our_product == true
+            cat_products =  Rails.env.development? ? collect_our_variant_ids(cat[:id], excel_price_offers) : collect_our_variant_ids(cat[:id], excel_price_offers)
           else
-            cat_products =  Rails.env.development? ? Services::Import.collect_variant_ids(cat[:id], excel_price_offers).take(15) : Services::Import.collect_variant_ids(cat[:id], excel_price_offers)
+            cat_products =  Rails.env.development? ? collect_variant_ids(cat[:id], excel_price_offers) : collect_variant_ids(cat[:id], excel_price_offers)
           end
           if cat_products.present?
             cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
             row_index_for_titles_array.push(cat_title_row.row_index+1)
-            if excel_price.rrc == true
+            if @excel_price.rrc == true
               sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой','Цена РРЦ'], style: tbl_header, height: 20
             else
               sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
@@ -283,8 +322,8 @@ class Services::Import
               offer = excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
               if offer.present?
                 # offers.each do |offer|
-                  data = Services::Import.collect_product_data_from_xml(offer,excel_price)
-                  if excel_price.rrc == true
+                  data = collect_product_data_from_xml(offer,@excel_price)
+                  if @excel_price.rrc == true
                     #discount = data[:price]-data[:price]*0.2
                     #pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
                     pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price],data[:rrc]]
@@ -311,7 +350,7 @@ class Services::Import
         end
 
         sheet.merge_cells("B1:C1")
-        if excel_price.rrc == true
+        if @excel_price.rrc == true
           sheet.merge_cells("D1:H1")
           sheet.merge_cells("B2:H2")
         else
@@ -319,13 +358,13 @@ class Services::Import
           sheet.merge_cells("B2:G2")
         end
         sheet.add_hyperlink( location: "'Навигация по каталогу'!A7", target: :sheet, ref: 'B1' )
-        if excel_price.rrc == true
+        if @excel_price.rrc == true
           sheet.column_widths 2,10,25,40,40,40,30,30,2
         else
           sheet.column_widths 2,10,25,40,40,40,30,2
         end
         puts "row_index_for_titles_array => "+row_index_for_titles_array.to_s
-        if excel_price.rrc == true
+        if @excel_price.rrc == true
           merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"H"+a.to_s }
         else
           merge_ranges = row_index_for_titles_array.map{|a| "B"+a.to_s+":"+"G"+a.to_s }
@@ -344,23 +383,23 @@ class Services::Import
     
     # puts "p inspect => "+p.inspect.to_s
 
-    # stream = p.to_stream
-    file_path = Services::Import::DownloadPath+"/public/#{excel_price.id.to_s}_file.xlsx"
-    # File.open(file_path, 'wb') { |f| f.write(stream.read) }
+    stream = p.to_stream
+    file_path = @excel_path
+    File.open(file_path, 'wb') { |f| f.write(stream.read) }
 
-    p.serialize(file_path)
+    # p.serialize(file_path)
 
-    excel_price.update!(file_status: 'end') if File.file?(file_path).present?
+    @excel_price.update!(file_status: 'end') if File.file?(file_path).present?
     File.delete(download_path) if File.file?(download_path).present?
 
     puts "===>>>> FINISH import excel_price #{Time.now.to_s}"
 
     current_process = "=====>>>> FINISH import excel_price - #{Time.now.to_s} - Закончили импорт каталога товаров для файла клиента"
-  	# ProductMailer.notifier_process(current_process).deliver_now
+    # ProductMailer.notifier_process(current_process).deliver_now
     FileUtils.rm_rf(Dir[Services::Import::DownloadPath+"/public/excel_price/*"]) if Rails.env.development?
   end
 
-  def self.collect_main_list_cat_info(categories_main_list)
+  def collect_main_list_cat_info(categories_main_list)
     account_url = "http://"+InsalesApi::Account.find.subdomain+".myinsales.ru"
     categories_main_list.each do |cat|
       puts "cat => "+cat.to_s
@@ -383,28 +422,86 @@ class Services::Import
     categories_main_list
   end
 
-  def self.download_remote_file(url)
-    ascii_url = URI.encode(url)
-    response = Net::HTTP.get_response(URI.parse(ascii_url))
-    StringIO.new(response.body)
+  def get_insales_excel
+    puts 'start get_insales_excel'
+    input_path = "https://adventer.su/marketplace/4230447.xls"
+    download_path = Services::Import::DownloadPath+"/public/4230447.xls"
+    File.delete(download_path) if File.file?(download_path).present?
+
+    RestClient.get( input_path ) { |response, request, result, &block|
+      case response.code
+      when 200
+        f = File.new(download_path, "wb")
+        f << response.body
+        f.close
+      else
+        response.return!(&block)
+      end
+      }
   end
 
-  def self.collect_product_data_from_xml(offer, excel_price)
-    picture_link = offer.css('picture').size > 1 ? offer.css('picture').first.text : offer.css('picture').text
-    data = {
-            id: offer['id'],
-            title: offer.css('model').text.present? ? offer.css('model').text : ' ',
-            sku: offer.css('vendorCode').text.present? ? offer.css('vendorCode').text : offer['id'],
-            desc: offer.css('description').text.present? ? offer.css('description').text : ' ',
-            price: Services::Import.price_shift(excel_price, offer.css('price').text),
-            rrc: offer.css('price').text,
-            url: offer.css('url').text,
-            image: Services::Import.process_image(picture_link, offer['id'])
-          }
-    data
+  def collect_data_from_excel
+    puts 'start collect_data_from_excel'
+    file_data = Array.new
+    spreadsheet = Roo::Excel.new(Services::Import::DownloadPath+"/public/4230447.xls")
+    header = spreadsheet.row(1)
+    (2..spreadsheet.last_row).each do |i|
+      row = Hash[[header, spreadsheet.row(i)].transpose]
+      file_data.push(row)
+    end
+    @file_data = file_data
   end
-  
-  def self.process_image(link, file_name)
+
+  def variant_ids_from_excel(product_id)
+    # puts 'start variant_ids_from_excel(product_id) => '+product_id.to_s
+    variant_ids = @file_data.map{|data| data["ID варианта"].to_i if data["ID товара"] == product_id}.reject(&:blank?)
+  end
+
+  def collect_variant_ids(cat_id, excel_price_offers)
+    puts "start collect_variant_ids"
+    collect_var_ids = []
+    pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
+    puts " === pr_ids count => "+pr_ids.count.to_s
+    pr_ids.each do |pd_id|
+      # pr_variants_ids = InsalesApi::Product.find(pd_id).variants.map(&:id)
+      # var_ids.push(pr_variants_ids)
+      var_ids = variant_ids_from_excel(pd_id)
+      # puts "var_ids from excel => "+var_ids.to_s
+      var_ids.each do |var_id|
+        collect_var_ids.push(var_id)
+      end
+    end
+    puts "collect_variant_ids count => "+collect_var_ids.count.to_s
+    puts "finish collect_variant_ids"
+    collect_var_ids
+    # excel_price_offers.each do |offer|
+    #   var_ids.push(offer['id']) if offer.css('categoryId').text == cat_id.to_s
+    # end
+    # puts "var_ids => "+var_ids.to_s
+    # var_ids
+  end
+
+  def collect_our_variant_ids(cat_id, excel_price_offers)
+    puts "start collect_our_variant_ids"
+    puts " === cat_id => "+cat_id.to_s
+    var_ids = collect_variant_ids(cat_id, excel_price_offers)
+    new_var_ids = []
+    var_ids.each do |var_id|
+      var = excel_price_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
+                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
+                                                      }[0]
+        new_var_ids.push(var['id']) if !var.nil?
+    end
+    puts "finish collect_our_variant_ids"
+    new_var_ids
+  end
+
+  def process_image(link, file_name)
+    puts "start process_image"
     image = ''
     if link.present?
       begin
@@ -416,15 +513,19 @@ class Services::Import
         puts 'process_image Net::OpenTimeout'
         puts link
       else
-        result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
-        image_magic = MiniMagick::Image.open(result.path)
-        image_magic.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
-        image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
+        # result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
+        # image_magic = MiniMagick::Image.open(result.path)
+        # image_magic.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
+        # image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
+        tempfile = ImageProcessing::MiniMagick.source(link.gsub('https','http')).saver(quality: 85).convert('jpg').resize_and_pad!(200, 200, background: "#FFFFFF", gravity: 'center')
+        image = tempfile.path
       end
     end
+    puts "finish process_image"
+    image
   end
 
-  def self.price_shift(excel_price, price)
+  def price_shift(excel_price, price)
     filePrice = price.present? ? price.to_f : nil
     # puts filePrice.to_s
 		price_move = excel_price.price_move
@@ -440,73 +541,19 @@ class Services::Import
     new_price
   end
 
-  def self.collect_variant_ids(cat_id, excel_price_offers)
-    var_ids = []
-    pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
-    pr_ids.each do |pd_id|
-      pr_variants_ids = InsalesApi::Product.find(pd_id).variants.map(&:id)
-      var_ids.push(pr_variants_ids)
-    end
-    puts "var_ids => "+var_ids.flatten.to_s
-    var_ids.flatten
-    # excel_price_offers.each do |offer|
-    #   var_ids.push(offer['id']) if offer.css('categoryId').text == cat_id.to_s
-    # end
-    # puts "var_ids => "+var_ids.to_s
-    # var_ids
+  def collect_product_data_from_xml(offer, excel_price)
+    picture_link = offer.css('picture').size > 1 ? offer.css('picture').first.text : offer.css('picture').text
+    data = {
+            id: offer['id'],
+            title: offer.css('model').text.present? ? offer.css('model').text : ' ',
+            sku: offer.css('vendorCode').text.present? ? offer.css('vendorCode').text : offer['id'],
+            desc: offer.css('description').text.present? ? offer.css('description').text : ' ',
+            price: price_shift(excel_price, offer.css('price').text),
+            rrc: offer.css('price').text,
+            url: offer.css('url').text,
+            image: process_image(picture_link, offer['id'])
+          }
+    data
   end
-
-  def self.collect_our_variant_ids(cat_id, excel_price_offers)
-    puts "start collect_our_variant_ids"
-    puts " === cat_id => "+cat_id.to_s
-    var_ids = Services::Import.collect_variant_ids(cat_id, excel_price_offers)
-    new_var_ids = []
-    var_ids.each do |var_id|
-      var = excel_price_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
-                                                      }[0]
-        new_var_ids.push(var['id']) if !var.nil?
-    end
-    new_var_ids
-
-    # excel_price_offers.each do |offer|
-    #   if offer.css('categoryId').text == cat_id.to_s
-    #     if offer.css('vendorCode').text.present?
-    #       if offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
-    #         offer.css('vendorCode').text.include?('АДВ') ||
-    #         offer.css('vendorCode').text.include?('АДВСМ') ||
-    #         offer.css('vendorCode').text.include?('ФО') ||
-    #         offer.css('vendorCode').text.include?('УК')
-    #         new_var_ids.push(offer['id'])
-    #       end
-    #     end
-    #   end
-    # end
-    # puts "new_var_ids => "+new_var_ids.to_s
-    # new_var_ids
-  end
-
-  def self.load_all_catalog_xml
-    input_path = "https://adventer.su/marketplace/1923917.xml"
-    download_path = Services::Import::DownloadPath+"/public/1923917.xml"
-    File.delete(download_path) if File.file?(download_path).present?
-
-    RestClient.get( input_path ) { |response, request, result, &block|
-      case response.code
-      when 200
-        f = File.new(download_path, "wb")
-        f << response.body
-        f.close
-        puts "load_all_catalog_xml load and write"
-      else
-        response.return!(&block)
-      end
-      }
-  end
-
 
 end
