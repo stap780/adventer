@@ -424,8 +424,8 @@ private
 
   def get_insales_excel
     puts 'start get_insales_excel'
-    input_path = "https://adventer.su/marketplace/4230447.xls"
-    download_path = Services::Import::DownloadPath+"/public/4230447.xls"
+    input_path = "https://adventer.su/marketplace/2416318.xls"
+    download_path = Services::Import::DownloadPath+"/public/2416318.xls"
     File.delete(download_path) if File.file?(download_path).present?
 
     RestClient.get( input_path ) { |response, request, result, &block|
@@ -443,7 +443,7 @@ private
   def collect_data_from_excel
     puts 'start collect_data_from_excel'
     file_data = Array.new
-    spreadsheet = Roo::Excel.new(Services::Import::DownloadPath+"/public/4230447.xls")
+    spreadsheet = Roo::Excel.new(Services::Import::DownloadPath+"/public/2416318.xls")
     header = spreadsheet.row(1)
     (2..spreadsheet.last_row).each do |i|
       row = Hash[[header, spreadsheet.row(i)].transpose]
