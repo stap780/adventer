@@ -514,12 +514,12 @@ private
         puts 'process_image Net::OpenTimeout'
         puts link
       else
-        # result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
-        # image_magic = MiniMagick::Image.open(result.path)
-        # image_magic.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
-        # image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
-        tempfile = ImageProcessing::MiniMagick.source(link.gsub('https','http')).saver(quality: 85).convert('jpg').resize_and_pad!(200, 200, background: "#FFFFFF", gravity: 'center')
-        image = tempfile.path
+        result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
+        image_magic = MiniMagick::Image.open(result.path)
+        image_magic.write(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
+        image = File.expand_path(Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg")
+        # tempfile = ImageProcessing::MiniMagick.source(link.gsub('https','http')).saver(quality: 85).convert('jpg').resize_and_pad!(200, 200, background: "#FFFFFF", gravity: 'center')
+        # image = tempfile.path
       end
     end
     puts "finish process_image"
