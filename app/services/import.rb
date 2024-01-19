@@ -502,7 +502,8 @@ private
 
   def process_image(link, file_name)
     puts "start process_image"
-    image_path = Services::Import::DownloadPath+"/public/excel_price/#{file_name}.jpg"
+    filename = file_name.present? ? file_name : File.basename(link)
+    image_path = Services::Import::DownloadPath+"/public/excel_price/#{filename}.jpg"
     if File.file?(image_path).present?
       image_path
     else
@@ -557,7 +558,7 @@ private
             price: price_shift(excel_price, offer.css('price').text),
             rrc: offer.css('price').text,
             url: offer.css('url').text,
-            image: process_image(picture_link, offer['group_id'])
+            image: process_image(picture_link, nil)
           }
     data
   end
