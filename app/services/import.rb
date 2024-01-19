@@ -1,5 +1,7 @@
 class Services::Import
   require 'open-uri'
+  require "image_processing/mini_magick"
+
   DownloadPath = Rails.env.development? ? "#{Rails.root}" : "/var/www/adventer/shared"
   MainText = 'Общество с ограниченной ответственностью «Адвентер»
 
@@ -29,12 +31,18 @@ class Services::Import
   def initialize(excel_price)
     @excel_price = excel_price
     @file_data = nil
-    @excel_path = Services::Import::DownloadPath+"/public/#{@excel_price.id.to_s}_file.xlsx"
+    @file_variants = nil
+    excel_file_name = "#{@excel_price.id.to_s}_file.xlsx"
+    @path = Rails.env.development? ? "#{Rails.public_path}/" : "/var/www/adventer/shared/public/"
+    @excel_path = @path+excel_file_name
+    @excel_price_offers = nil
+    @categories = nil
+    @download_path = nil
   end
 
   def call
-    get_insales_excel
-    collect_data_from_excel
+    collect_data_from_file
+    collect_variants_from_xml
     create_xlsx
   end
   
@@ -126,18 +134,8 @@ private
     # puts "=====>>>> Finish import all_offers #{Time.now.to_s}"    
     
     @excel_price.update!(file_status: 'process')
-    File.delete(@excel_path) if File.file?(@excel_path).present?
-    url = @excel_price.link
-    filename = url.split('/').last
-    download = open(url)
-    download_path = Services::Import::DownloadPath+"/public/"+filename
-    IO.copy_stream(download, download_path)
-    data = Nokogiri::XML(open(download_path))
 
-    categories = data.xpath("//category").map{|c| {id: c["id"], title: c.text, parent_id: c["parentId"]}}
-    excel_price_offers = data.xpath("//offer")
-
-    all_categories = collect_main_list_cat_info(categories)
+    all_categories = collect_main_list_cat_info(@categories)
 
     select_main_cats = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? nil : all_categories.select{|c| c[:parent_id] == nil}
 
@@ -192,7 +190,7 @@ private
     notice_text_main_sheet.add_run('Подсказка: ', b: true, color: 'EA4488')
     notice_text_main_sheet.add_run('для того чтобы открыть нужную категорию нажмите на название или вкладку')
 
-    puts "start create main sheet"
+    puts "=== start create main sheet ==="
     wb.add_worksheet(name: 'Навигация по каталогу') do |sheet|
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
       sheet.add_row ['','','','','','','','','','',''], height: 30, style: bg_w
@@ -215,7 +213,7 @@ private
           sheet.rows[row_end+1].cells[column_end].value = cat[:title]
           sheet.rows[row_end+1].cells[column_end].style = main_label
           file_name = cat[:id]
-          image = process_image(cat[:image], file_name)
+          image = process_image(cat[:image], cat[:id])
           sheet.add_image(image_src: image, :noSelect => true, :noMove => true) do |image|
             image.width = 200
             image.height = 200
@@ -230,20 +228,21 @@ private
       sheet.merge_cells('B4:H4')
       sheet.merge_cells('B5:H5')
       sheet.merge_cells('J6:J11')
-      logo_image = Services::Import::DownloadPath+"/public/adventer_logo_excel.jpg"
+      logo_image = @path+"adventer_logo_excel.jpg"
       sheet.add_image(image_src: logo_image, start_at: 'A1', end_at: 'L4')
       sheet['J6'].value = Services::Import::MainText
       sheet['J6'].style = but_rekv
       puts "finish add collections to main sheet"
     end
-    puts "finish create main sheet"
+    puts "=== finish create main sheet ==="
 
     # row_index_for_titles_array = []
-    puts "start create seconds collections sheets"
+    puts "=== start create seconds collections sheets ==="
     puts "seconds collections categories_for_list count => "+categories_for_list.count.to_s
+
     categories_for_list.each_with_index do |cat, index|
       row_index_for_titles_array = []
-      puts "start create sheet -> "+cat[:title]
+      puts "-> start create sheet -> "+cat[:title]
       notice_text = Axlsx::RichText.new
       notice_text.add_run('Подсказка: ', :b => true)
       notice_text.add_run('для того чтобы открыть позицию на сайте нажмите на наименование/фото товара')
@@ -251,90 +250,38 @@ private
         sheet.add_row ['','<= НА ГЛАВНУЮ','', cat[:title]], style: [nil,back_button,back_button,ind_header], height: 30
         sheet.add_row ['',notice_text,'','','','',''], style: [nil,notice_b,notice_label,notice_b,notice_b,notice_b,notice_b,notice_b], height: 20
         second_cats = all_categories.select{ |c| c[:parent_id] == cat[:id] }
-        if second_cats.present?
-          puts "second_cats.present? => "+second_cats.present?.to_s
-          second_cats.each do |s_cat|
-            puts "second_cat id => "+s_cat[:id].to_s
-            puts "second_cat title => "+s_cat[:title].to_s
-            if @excel_price.our_product == true
-              cat_products =  Rails.env.development? ? collect_our_variant_ids(s_cat[:id], excel_price_offers) : collect_our_variant_ids(s_cat[:id], excel_price_offers)
-            else
-              cat_products =  Rails.env.development? ? collect_variant_ids(s_cat[:id], excel_price_offers) : collect_variant_ids(s_cat[:id], excel_price_offers)
-            end
-            # puts "second_cat present and cat_products => "+cat_products.to_s
-            if cat_products.present?
-              puts "second_cat have products"
-              cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
-              row_index_for_titles_array.push(cat_title_row.row_index+1)
-              if @excel_price.rrc == true
-                sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой','Цена РРЦ'], style: tbl_header, height: 20
-              else
-                sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
-              end
-              cat_products.each_with_index do |var_id, index|
-              #pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
-              # offer = all_offers.select{|off| off if off["id"] == var_id.to_s}[0]
-              offer = excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
-              if offer.present?
-                # offers.each do |offer|
-                    data = collect_product_data_from_xml(offer,@excel_price)
-                    if @excel_price.rrc == true
-                      discount = data[:price]-data[:price]*0.2
-                      pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
-                    else
-                      pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
-                    end
-                    pr_row = sheet.add_row pr_data, style: pr_style, height: 150
-                    hyp_ref = "D#{(pr_row.row_index+1).to_s}"
-                    sheet.add_hyperlink location: data[:url], ref: hyp_ref
-                    sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
-                      image.start_at 2, pr_row.row_index
-                      image.end_at 3, pr_row.row_index+1
-                      image.anchor.from.rowOff = 10_000
-                      image.anchor.from.colOff = 10_000
-                    end
-                  end
-                # end           
-              end
-            else
-              puts "second_cat don't have products"
-            end
-          end
-        end
+
+        line_head_rrc = ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой','Цена РРЦ']
+        line_head = ['','№','Фото','Наименование','Артикул','Описание','Цена']
+
+        puts "subcats.present? => "+second_cats.present?.to_s
+
         if !second_cats.present?
-          puts "second_cats.present? => "+second_cats.present?.to_s
-          if @excel_price.our_product == true
-            cat_products =  Rails.env.development? ? collect_our_variant_ids(cat[:id], excel_price_offers) : collect_our_variant_ids(cat[:id], excel_price_offers)
-          else
-            cat_products =  Rails.env.development? ? collect_variant_ids(cat[:id], excel_price_offers) : collect_variant_ids(cat[:id], excel_price_offers)
-          end
+          puts "start check main cat =>"+cat[:id].to_s
+          puts "start check main cat =>"+cat[:title].to_s
+          cat_products = collect_variant_ids(cat[:id])
+          puts "main cat have product variants ? "+cat_products.present?.to_s
           if cat_products.present?
+            puts "main cat product variants count "+cat_products.count.to_s
             cat_title_row = sheet.add_row ['',cat[:title]], style: [nil,header_second], height: 30
             row_index_for_titles_array.push(cat_title_row.row_index+1)
             if @excel_price.rrc == true
-              sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена со скидкой','Цена РРЦ'], style: tbl_header, height: 20
+              sheet.add_row line_head_rrc, style: tbl_header, height: 20
             else
-              sheet.add_row ['','№','Фото','Наименование','Артикул','Описание','Цена'], style: tbl_header, height: 20
+              sheet.add_row line_head, style: tbl_header, height: 20
             end
             cat_products.each_with_index do |var_id, index|
-              #pr = all_offers.select{|offer| offer if offer["id"] == pr_id.to_s}[0]
-              # offer = all_offers.select{|off| off if off["id"] == var_id.to_s}[0]
-              offer = excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+              offer = @excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
               if offer.present?
-                # offers.each do |offer|
-                  data = collect_product_data_from_xml(offer,@excel_price)
+                puts "start create line"
+                  data = collect_product_data_from_xml(offer)
                   if @excel_price.rrc == true
-                    #discount = data[:price]-data[:price]*0.2
-                    #pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
                     pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price],data[:rrc]]
                   else
                     pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
                   end
-                  #puts pr_data.to_s if pr['id'] == '139020547'
                   pr_row = sheet.add_row pr_data, style: pr_style, height: 150
-                  # puts "pr_row.row_index - "+pr_row.row_index.to_s
                   hyp_ref = "D#{(pr_row.row_index+1).to_s}"
-                  # puts hyp_ref.to_s
                   sheet.add_hyperlink location: data[:url], ref: hyp_ref
 
                   sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
@@ -343,9 +290,53 @@ private
                     image.anchor.from.rowOff = 10_000
                     image.anchor.from.colOff = 10_000
                   end
-                # end
+                puts "finish create line" 
               end          
             end
+          end
+          puts "finish main cat =>"+cat[:title].to_s
+        end  
+        if second_cats.present?
+          second_cats.each do |s_cat|
+            puts "     subcat id => "+s_cat[:id].to_s
+            puts "     subcat title => "+s_cat[:title].to_s
+
+            cat_products = collect_variant_ids(s_cat[:id])
+            puts "     subcat have product variants ? "+cat_products.present?.to_s
+            if cat_products.present?
+              puts "     subcat product variants count "+cat_products.count.to_s
+              cat_title_row = sheet.add_row ['',s_cat[:title]], style: [nil,header_second], height: 30
+              row_index_for_titles_array.push(cat_title_row.row_index+1)
+              if @excel_price.rrc == true
+                sheet.add_row line_head_rrc, style: tbl_header, height: 20
+              else
+                sheet.add_row line_head, style: tbl_header, height: 20
+              end
+              cat_products.each_with_index do |var_id, index|
+              offer = @excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+              if offer.present?
+                  puts "     start create line"
+                  data = collect_product_data_from_xml(offer)
+                  if @excel_price.rrc == true
+                    discount = data[:price]-data[:price]*0.2
+                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
+                  else
+                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                  end
+                  pr_row = sheet.add_row pr_data, style: pr_style, height: 150
+                  hyp_ref = "D#{(pr_row.row_index+1).to_s}"
+                  sheet.add_hyperlink location: data[:url], ref: hyp_ref
+                  sheet.add_image(image_src: data[:image], :noSelect => true, :noMove => true, hyperlink: data[:url]) do |image|
+                    image.start_at 2, pr_row.row_index
+                    image.end_at 3, pr_row.row_index+1
+                    image.anchor.from.rowOff = 10_000
+                    image.anchor.from.colOff = 10_000
+                  end
+                  puts "     finish create line" 
+                end
+              end
+            end
+            puts "     finish subcat =>"+s_cat[:title].to_s
           end
         end
 
@@ -376,7 +367,7 @@ private
           pane.y_split = 2
         end
       end
-      puts "finish create sheet -> "+cat[:title]
+      puts "-> finish create sheet -> "+cat[:title]
     end
     puts "finish create seconds collections sheets"
     puts "p.present? => "+p.present?.to_s
@@ -390,13 +381,13 @@ private
     # p.serialize(file_path)
 
     @excel_price.update!(file_status: 'end') if File.file?(file_path).present?
-    File.delete(download_path) if File.file?(download_path).present?
+    File.delete(@download_path) if File.file?(@download_path).present?
 
     puts "===>>>> FINISH import excel_price #{Time.now.to_s}"
 
     current_process = "=====>>>> FINISH import excel_price - #{Time.now.to_s} - Закончили импорт каталога товаров для файла клиента"
     # ProductMailer.notifier_process(current_process).deliver_now
-    FileUtils.rm_rf(Dir[Services::Import::DownloadPath+"/public/excel_price/*"]) if Rails.env.development?
+    FileUtils.rm_rf(Dir[@path+"excel_price/*"]) if Rails.env.development?
   end
 
   def collect_main_list_cat_info(categories_main_list)
@@ -422,88 +413,74 @@ private
     categories_main_list
   end
 
-  def get_insales_excel
-    puts 'start get_insales_excel'
-    input_path = "https://adventer.su/marketplace/2416318.xls"
-    download_path = Services::Import::DownloadPath+"/public/2416318.xls"
-    File.delete(download_path) if File.file?(download_path).present?
-
-    RestClient.get( input_path ) { |response, request, result, &block|
-      case response.code
-      when 200
-        f = File.new(download_path, "wb")
-        f << response.body
-        f.close
-      else
-        response.return!(&block)
-      end
-      }
-  end
-
-  def collect_data_from_excel
-    puts 'start collect_data_from_excel'
-    file_data = Array.new
-    spreadsheet = Roo::Excel.new(Services::Import::DownloadPath+"/public/2416318.xls")
-    header = spreadsheet.row(1)
-    (2..spreadsheet.last_row).each do |i|
-      row = Hash[[header, spreadsheet.row(i)].transpose]
-      file_data.push(row)
+  def collect_variants_from_xml
+    array = Array.new
+    @excel_price_offers.each do |offer|
+      hash = Hash.new
+      key = offer["group_id"]
+      value = offer["id"]
+      hash[key] = value
+      array.push(hash)
     end
-    @file_data = file_data
+    @file_variants = array.each_with_object({}) { |hash, element| hash.each { |key, val| (element[key] ||= []) << val } } #.reduce({}) {|h, i| h.merge(i){|k, old, new| [old, new].flatten}}
   end
 
-  def variant_ids_from_excel(product_id)
-    # puts 'start variant_ids_from_excel(product_id) => '+product_id.to_s
-    variant_ids = @file_data.map{|data| data["ID варианта"].to_i if data["ID товара"] == product_id}.reject(&:blank?)
+  def collect_data_from_file
+    puts 'start collect_data_from_file'
+    File.delete(@excel_path) if File.file?(@excel_path).present?
+    url = @excel_price.link
+    filename = url.split('/').last
+    download = open(url)
+    @download_path = @path+filename
+    IO.copy_stream(download, @download_path)
+    data = Nokogiri::XML(open(@download_path))
+
+    @categories = data.xpath("//category").map{|c| {id: c["id"], title: c.text, parent_id: c["parentId"]}}
+    @excel_price_offers = data.xpath("//offer")
   end
 
-  def collect_variant_ids(cat_id, excel_price_offers)
+  def variant_ids_from_xml(pr_id)
+    puts '         start variant_ids_from_xml - Time => '+Time.now.to_s
+    ids = @file_variants[pr_id.to_s]
+    puts ids.to_s
+    puts '         finish variant_ids_from_xml - Time => '+Time.now.to_s
+    ids.present? ? ids : []
+  end
+
+  def collect_variant_ids(cat_id)
     puts "start collect_variant_ids"
     collect_var_ids = []
     pr_ids = InsalesApi::Collect.find(:all, :params => { collection_id: cat_id, limit: 1000 }).map(&:product_id)
     puts " === pr_ids count => "+pr_ids.count.to_s
-    pr_ids.each do |pd_id|
-      # pr_variants_ids = InsalesApi::Product.find(pd_id).variants.map(&:id)
-      # var_ids.push(pr_variants_ids)
-      var_ids = variant_ids_from_excel(pd_id)
-      # puts "var_ids from excel => "+var_ids.to_s
+    pr_ids.each do |pr_id|
+      puts '   check pr_id => '+pr_id.to_s
+      var_ids = variant_ids_from_xml(pr_id)
       var_ids.each do |var_id|
-        collect_var_ids.push(var_id)
+
+        if @excel_price.our_product == true
+          s_var = @excel_price_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
+                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
+                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
+                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
+                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
+                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
+                      }[0]
+          collect_var_ids.push(s_var['id']) if !s_var.nil?
+        else
+          collect_var_ids.push(var_id)
+        end
+
       end
     end
     puts "collect_variant_ids count => "+collect_var_ids.count.to_s
     puts "finish collect_variant_ids"
     collect_var_ids
-    # excel_price_offers.each do |offer|
-    #   var_ids.push(offer['id']) if offer.css('categoryId').text == cat_id.to_s
-    # end
-    # puts "var_ids => "+var_ids.to_s
-    # var_ids
   end
 
-  def collect_our_variant_ids(cat_id, excel_price_offers)
-    puts "start collect_our_variant_ids"
-    puts " === cat_id => "+cat_id.to_s
-    var_ids = collect_variant_ids(cat_id, excel_price_offers)
-    new_var_ids = []
-    var_ids.each do |var_id|
-      var = excel_price_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
-                                                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
-                                                      }[0]
-        new_var_ids.push(var['id']) if !var.nil?
-    end
-    puts "finish collect_our_variant_ids"
-    new_var_ids
-  end
-
-  def process_image(link, file_name)
+  def process_image(link, filename)
     puts "start process_image"
-    filename = file_name.present? ? file_name : File.basename(link)
-    image_path = Services::Import::DownloadPath+"/public/excel_price/#{filename}.jpg"
+    file_name = filename+'.'+File.basename(link).split('.').last
+    image_path = @path+"excel_price/#{file_name}"
     if File.file?(image_path).present?
       image_path
     else
@@ -519,25 +496,25 @@ private
           puts 'process_image Net::OpenTimeout'
           puts link
         else
-          result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
-          image_magic = MiniMagick::Image.open(result.path)
-          image_magic.write(image_path)
-          image = File.expand_path(image_path)
-          # tempfile = ImageProcessing::MiniMagick.source(link.gsub('https','http')).saver(quality: 85).convert('jpg').resize_and_pad!(200, 200, background: "#FFFFFF", gravity: 'center')
-          # image = tempfile.path
+          # result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call
+          # image_magic = MiniMagick::Image.open(result.path)
+          # image_magic.write(image_path)
+          # image = File.expand_path(image_path)
+          tempfile = ImageProcessing::MiniMagick.source(link.gsub('https','http')).saver(quality: 85).convert('jpg').resize_and_pad!(200, 200, background: "#FFFFFF", gravity: 'center')
+          image = IO.copy_stream(tempfile, image_path) #we can't use tmp file later when save new excel
         end
       end
       puts "finish process_image"
-      image
+      image_path
     end
   end
 
-  def price_shift(excel_price, price)
+  def price_shift(price)
     filePrice = price.present? ? price.to_f : nil
     # puts filePrice.to_s
-		price_move = excel_price.price_move
-		price_shift = excel_price.price_shift
-		price_points = excel_price.price_points
+		price_move = @excel_price.price_move
+		price_shift = @excel_price.price_shift
+		price_points = @excel_price.price_points
     
     if price_points == "fixed"
       new_price = price_move == "plus" ? (filePrice+price_shift.to_f).round(-1) : (filePrice-price_shift.to_f).round(-1)
@@ -548,17 +525,17 @@ private
     new_price
   end
 
-  def collect_product_data_from_xml(offer, excel_price)
+  def collect_product_data_from_xml(offer)
     picture_link = offer.css('picture').size > 1 ? offer.css('picture').first.text : offer.css('picture').text
     data = {
             id: offer['id'],
             title: offer.css('model').text.present? ? offer.css('model').text : ' ',
             sku: offer.css('vendorCode').text.present? ? offer.css('vendorCode').text : offer['id'],
             desc: offer.css('description').text.present? ? offer.css('description').text : ' ',
-            price: price_shift(excel_price, offer.css('price').text),
+            price: price_shift(offer.css('price').text),
             rrc: offer.css('price').text,
             url: offer.css('url').text,
-            image: process_image(picture_link, nil)
+            image: process_image(picture_link, offer['id'])
           }
     data
   end
