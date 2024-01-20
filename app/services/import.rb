@@ -270,15 +270,20 @@ private
             else
               sheet.add_row line_head, style: tbl_header, height: 20
             end
-            cat_products.each_with_index do |var_id, index|
-              offer = @excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+            index = 1
+            cat_products.each do |var_id|
+              if @excel_price.our_product == true
+                offer = @excel_price_offers.select{|off| off if off["id"] == var_id.to_s && check_our_product(off)}[0]
+              else
+                offer = @excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+              end
               if offer.present?
                 puts "start create line"
                   data = collect_product_data_from_xml(offer)
                   if @excel_price.rrc == true
-                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price],data[:rrc]]
+                    pr_data = ['',(index).to_s,'',data[:title],data[:sku],data[:desc],data[:price],data[:rrc]]
                   else
-                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                    pr_data = ['',(index).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
                   end
                   pr_row = sheet.add_row pr_data, style: pr_style, height: 150
                   hyp_ref = "D#{(pr_row.row_index+1).to_s}"
@@ -290,7 +295,8 @@ private
                     image.anchor.from.rowOff = 10_000
                     image.anchor.from.colOff = 10_000
                   end
-                puts "finish create line" 
+                puts "finish create line"
+                index = index + 1
               end          
             end
           end
@@ -312,16 +318,22 @@ private
               else
                 sheet.add_row line_head, style: tbl_header, height: 20
               end
-              cat_products.each_with_index do |var_id, index|
-              offer = @excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+              index = 1
+              cat_products.each do |var_id|
+              if @excel_price.our_product == true
+                offer = @excel_price_offers.select{|off| off if off["id"] == var_id.to_s && check_our_product(off)}[0]
+              else
+                offer = @excel_price_offers.select{|off| off if off["id"] == var_id.to_s}[0]
+              end
+
               if offer.present?
                   puts "     start create line"
                   data = collect_product_data_from_xml(offer)
                   if @excel_price.rrc == true
                     discount = data[:price]-data[:price]*0.2
-                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
+                    pr_data = ['',(index).to_s,'',data[:title],data[:sku],data[:desc],discount,data[:price]]
                   else
-                    pr_data = ['',(index+1).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
+                    pr_data = ['',(index).to_s,'',data[:title],data[:sku],data[:desc],data[:price]]
                   end
                   pr_row = sheet.add_row pr_data, style: pr_style, height: 150
                   hyp_ref = "D#{(pr_row.row_index+1).to_s}"
@@ -332,7 +344,8 @@ private
                     image.anchor.from.rowOff = 10_000
                     image.anchor.from.colOff = 10_000
                   end
-                  puts "     finish create line" 
+                  puts "     finish create line"
+                  index = index + 1
                 end
               end
             end
@@ -457,24 +470,36 @@ private
       var_ids = variant_ids_from_xml(pr_id)
       var_ids.each do |var_id|
 
-        if @excel_price.our_product == true
-          s_var = @excel_price_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
-                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
-                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
-                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
-                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
-                  offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
-                      }[0]
-          collect_var_ids.push(s_var['id']) if !s_var.nil?
-        else
-          collect_var_ids.push(var_id)
-        end
-
+        # if @excel_price.our_product == true
+        #   s_var = @excel_price_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
+        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
+        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
+        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
+        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
+        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
+        #               }[0]
+        #   collect_var_ids.push(s_var['id']) if !s_var.nil?
+        # else
+        #   collect_var_ids.push(var_id)
+        # end
+        collect_var_ids.push(var_id)
       end
     end
     puts "collect_variant_ids count => "+collect_var_ids.count.to_s
     puts "finish collect_variant_ids"
     collect_var_ids
+  end
+
+  def check_our_product(offer)
+    puts "     start check_our_product => "+Time.now.to_s
+    check = false
+    our_sku = ['ФД','АДВ','АДВСМ','ФО','УК']
+    vendorCode = offer.css('vendorCode').text
+    if vendorCode.present?
+      check = our_sku.any?{|a| vendorCode.include?(a) && !vendorCode.include?('ФДИ')}
+    end
+    puts "     finish check_our_product => "+Time.now.to_s
+    check
   end
 
   def process_image(link, filename)
