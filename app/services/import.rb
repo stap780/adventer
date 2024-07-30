@@ -469,19 +469,6 @@ private
       puts '   check pr_id => '+pr_id.to_s
       var_ids = variant_ids_from_xml(pr_id)
       var_ids.each do |var_id|
-
-        # if @excel_price.our_product == true
-        #   s_var = @excel_price_offers.select{ |offer| offer["id"] if offer.css('vendorCode').text.present? && 
-        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФД') && !offer.css('vendorCode').text.include?('ФДИ') ||
-        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВ') ||
-        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('АДВСМ') ||
-        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('ФО') ||
-        #           offer["id"] == var_id.to_s && offer.css('vendorCode').text.include?('УК')
-        #               }[0]
-        #   collect_var_ids.push(s_var['id']) if !s_var.nil?
-        # else
-        #   collect_var_ids.push(var_id)
-        # end
         collect_var_ids.push(var_id)
       end
     end
@@ -519,6 +506,9 @@ private
           puts link
         rescue Net::OpenTimeout
           puts 'process_image Net::OpenTimeout'
+          puts link
+        rescue Errno::ENOENT
+          puts 'process_image Errno::ENOENT'
           puts link
         else
           # result = ImageProcessing::MiniMagick.source(link.gsub('https','http')).resize_and_pad(200, 200, background: "#FFFFFF", gravity: 'center').convert('jpg').call

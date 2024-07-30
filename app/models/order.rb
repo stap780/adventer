@@ -22,7 +22,7 @@ class Order < ApplicationRecord
   def self.download_last_five
     puts "start download order"
 
-    url_order = Insales::Api::Base_url+"orders.json?page=1&per_page=5"
+    url_order = Insales::Api::Base_url+"orders.json?page=1&per_page=10"
 
     RestClient.get( url_order, :accept => :json, :content_type => "application/json") do |response, request, result, &block|
       case response.code

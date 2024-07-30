@@ -272,9 +272,9 @@ class KpsController < ApplicationController
 
   def print1c
       @kp_products_data = []
-      @kp.kp_products.each do |kp|
-        sku = kp.product.sku.present? ? kp.product.sku : nil
-        title = kp.product.title
+      @kp.kp_products.each do |item|
+        sku = item.sku.present? ? item.sku : nil #item.product.sku.present? ? item.product.sku : nil
+        title = item.product.title
         if !sku.nil? && sku.include?('ФД')
           cat = "Продукция"
           group = "Артикульная продукция"
@@ -315,12 +315,12 @@ class KpsController < ApplicationController
         data = {
                 sku: sku,
                 # image_url: rails_representation_url(kp.product.images.first.variant(combine_options: {auto_orient: true, thumbnail: '40x40', gravity: 'center', extent: '40x40' }).processed, only_path: true),
-                image_url: kp.product.images.first,
+                image_url: item.product.images.first,
                 title: title,
-                price: kp.price,
-                desc: kp.desc,
-                quantity: kp.quantity,
-                sum: (kp.sum.truncate(2).to_s("F") + "00")[ /.*\..{2}/ ],
+                price: item.price,
+                desc: item.desc,
+                quantity: item.quantity,
+                sum: (item.sum.truncate(2).to_s("F") + "00")[ /.*\..{2}/ ],
                 cat: cat,
                 group: group,
                 type: type,
