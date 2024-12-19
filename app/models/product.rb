@@ -7,7 +7,7 @@ class Product < ApplicationRecord
   before_save :normalize_data_white_space
   validates :title, presence: true
   # validates :sku, presence: true, uniqueness: true
-  validates :images, size: { less_than: 10.megabytes , message: 'размер файла должен быть меньше 10Мб' }
+  validates :images, size: { less_than: 15.megabytes , message: 'размер файла должен быть меньше 15Мб' }
   scope :search_by_title_sku, ->(q) { where("title ILIKE ? or sku ILIKE ?", "%#{q}%", "%#{q}%").order(:title) }
 
 
@@ -75,6 +75,12 @@ class Product < ApplicationRecord
   def self.strip_html(content_data)
     content = Nokogiri::HTML(content_data)
     content.text.squish if content.text.respond_to?("squish")
+  end
+
+  def ins_ids_info
+    return '' unless insid.present? || insvarid.present?
+
+    "<small>id товара: #{insid}<br>id варианта: #{insvarid}</small>".html_safe
   end
 
 

@@ -39,8 +39,9 @@ gem 'caxlsx'
 gem 'caxlsx_rails'
 gem 'insales_api'
 gem 'rubyzip'
-gem 'delayed_job_web'
+
 gem 'best_in_place', '~> 3.0.1'
+gem 'delayed_job_web'
 
 gem 'bcrypt_pbkdf', '< 2.0', :require => false
 gem 'ed25519', '~> 1.2', '>= 1.2.4'

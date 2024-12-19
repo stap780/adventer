@@ -2,29 +2,40 @@
   <%= f.error_notification %>
   <%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
 
+  <div class="col-12 d-flex align-items-center gap-3">
+    <div class="h3"> <%= page_title %></div>
+    <div>
+      <%= link_to "Товар в инсалес", "http://adventer.su/product_by_id/#{@product.insid}", target: "blank" if @product.insid %>
+    </div>
+  </div>
   <div class="row">
-    <div class="col-12 h3"><%= page_title %></div>
-    <%= link_to "Товар в инсалес", "http://adventer.su/product_by_id/#{@product.insid}", target: "blank" if @product.insid %>
+    <div class="col-12">
+      <div class="form-check form-switch">
+        <%= f.input_field :our, as: :boolean, class: 'form-check-input', boolean_style: :inline %>
+        <label class="form-check-label">наше производство</label>
+      </div>
+    </div>
     <div class="col-6 row">
-    <%= f.input :sku, wrapper_html: { class: "col-4" } %>
-    <%= f.input :insid, disabled: true, wrapper_html: { class: "col-4" } %>
-    <%= f.input :insvarid, wrapper_html: { class: "col-4" } %>
-    <%= f.input :title, label: "Название", wrapper_html: { class: "col-12" } %>
-    <%= f.input :desc, label: "Описание", as: :text , wrapper_html: { class: "col-12" } %>
-    <%= f.input :quantity, label: "К-во" , wrapper_html: { class: "col-4" } %>
-    <%= f.input :costprice, label: "Цена закупки", wrapper_html: { class: "col-4" }  %>
-    <%= f.input :price, label: "Цена" , wrapper_html: { class: "col-4" } %>
-</div>
-<div class="col-6 row align-content-start">
-  <div class="col-12 mb-3 h3">Изображения</div>
-  <%= f.input :images, as: :file, label: false, :input_html => { :multiple => true } %>
-  <%= render '/layouts/image_form', :f => @product %>
+      <%= f.input :sku, wrapper_html: { class: "col-4" } %>
+      <%= f.input :insid, disabled: true, wrapper_html: { class: "col-4" } %>
+      <%= f.input :insvarid, wrapper_html: { class: "col-4" } %>
+      <%= f.input :title, label: "Название", wrapper_html: { class: "col-12" } %>
+      <%= f.input :desc, label: "Описание", as: :text, input_html: {rows: 5} , wrapper_html: { class: "col-12" } %>
+      <%= f.input :quantity, label: "К-во" , wrapper_html: { class: "col-4" } %>
+      <%= f.input :costprice, label: "Цена закупки", wrapper_html: { class: "col-4" }  %>
+      <%= f.input :price, label: "Цена" , wrapper_html: { class: "col-4" } %>
+    </div>
+    <div class="col-6 row align-content-start">
+      <div class="col-12 mb-3 label">Изображения</div>
+      <%= f.input :images, as: :file, label: false, :input_html => { :multiple => true } %>
+      <%= render '/layouts/image_form', :f => @product %>
+      </div>
+    </div>
   </div>
-</div>
   <div class="row">
-  <div class="col-2 btn-group mt-5">
-    <%= f.button :submit, class: 'btn btn-success' %>
-    <%= link_to 'Назад', :back, class: 'btn btn-outline-primary' %>
-  </div>
+    <div class="col-2 btn-group mt-5">
+      <%= f.button :submit, class: 'btn btn-success' %>
+      <%= link_to 'Назад', :back, class: 'btn btn-outline-primary' %>
+    </div>
   </div>
 <% end %>

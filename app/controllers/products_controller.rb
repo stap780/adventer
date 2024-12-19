@@ -86,13 +86,11 @@ class ProductsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
     def set_product
       @product = Product.with_attached_images.find(params[:id])
     end
 
-    # Only allow a list of trusted parameters through.
     def product_params
-      params.require(:product).permit(:sku, :title, :desc, :quantity, :costprice, :price, :insid, :insvarid, images: [], images_attachments_attributes: [:id, :_destroy])
+      params.require(:product).permit(:our, :sku, :title, :desc, :quantity, :costprice, :price, :insid, :insvarid, images: [], images_attachments_attributes: [:id, :_destroy])
     end
 end

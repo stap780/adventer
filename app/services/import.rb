@@ -48,32 +48,34 @@ class Services::Import
   
   def self.product
     require 'open-uri'
-    puts '=====>>>> СТАРТ InSales EXCEL '+Time.now.to_s
-    url = "https://adventer.su/marketplace/2416318.xls"
+    puts "=====>>>> СТАРТ InSales EXCEL #{Time.now}"
+    url = 'https://adventer.su/marketplace/2416318.xls'
 		filename = url.split('/').last
     download = open(url)
-		download_path = Services::Import::DownloadPath+"/public/"+filename
+		download_path = Services::Import::DownloadPath+'/public/'+filename
 		IO.copy_stream(download, download_path)
     spreadsheet = Roo::Excel.new(download_path)
     header = spreadsheet.row(1)
     (2..spreadsheet.last_row).each do |i|
       row = Hash[[header, spreadsheet.row(i)].transpose]
-      sdesc = row["Краткое описание"].present? ? Product.strip_html(row["Краткое описание"]) : nil
-      fdesc = row["Полное описание"].present? ? Product.strip_html(row["Полное описание"]) : ''
+      sdesc = row['Краткое описание'].present? ? Product.strip_html(row['Краткое описание']) : nil
+      fdesc = row['Полное описание'].present? ? Product.strip_html(row['Полное описание']) : ''
       desc = sdesc.present? ? sdesc : fdesc
+      we_have_our = row['Параметр: Наше производство'].present? && row['Параметр: Наше производство'] == 'да' ? true : false 
       save_data = {
-                  insvarid: row["ID варианта"].to_i,
-                  sku: row["Артикул"].to_s,
-                  title: row["Название товара или услуги"].to_s,
-                  desc: desc,
-                  price: row["Цена продажи"].to_i,
-                  insid: row["ID товара"].to_i
-                }
+        insvarid: row['ID варианта'].to_i,
+        sku: row['Артикул'].to_s,
+        title: row['Название товара или услуги'].to_s,
+        desc: desc,
+        price: row['Цена продажи'].to_i,
+        insid: row['ID товара'].to_i,
+        our: we_have_our
+      }
 
       search_product = Product.find_by_insvarid(save_data[:insvarid])
       product = search_product.present? ? search_product : Product.create!(save_data)
-      puts "import product id - "+product.id.to_s
-      images = row["Изображения"].present? ? row["Изображения"].split(' ').reject(&:blank?) : []
+      puts "import product id - #{product.id}"
+      images = row['Изображения'].present? ? row['Изображения'].split(' ').reject(&:blank?) : []
       # puts "images кол-во - #{images.count.to_s}"
       # puts images.to_s
       product.update!(save_data)
@@ -83,7 +85,7 @@ class Services::Import
           img_filename = img_link.split('/').last.split('.').first
           if product.images.size < 3 && !product.images.select{|im| im.filename.to_s == img_filename }.present?
             file = Services::Import.download_remote_file(img_link)
-            product.images.attach(io: file, filename: img_filename, content_type: "image/jpg")
+            product.images.attach(io: file, filename: img_filename, content_type: 'image/jpg')
           end
         end
       end
@@ -93,10 +95,11 @@ class Services::Import
     # Product.where(quantity: nil).update_all(quantity: 0)
     File.delete(download_path) if File.file?(download_path).present?
 
-    puts '=====>>>> FINISH InSales EXCEL '+Time.now.to_s
+    puts "=====>>>> FINISH InSales EXCEL #{Time.now}"
 
-    current_process = "=====>>>> FINISH InSales EXCEL - #{Time.now.to_s} - Закончили обновление каталога товаров"
+    # current_process = "=====>>>> FINISH InSales EXCEL - #{Time.now} - Закончили обновление каталога товаров"
   	# ProductMailer.notifier_process(current_process).deliver_now
+    # 
   end
   
   def self.download_remote_file(url)
@@ -106,8 +109,8 @@ class Services::Import
   end
   
   def self.load_all_catalog_xml
-    input_path = "https://adventer.su/marketplace/1923917.xml"
-    download_path = Services::Import::DownloadPath+"/public/1923917.xml"
+    input_path = 'https://adventer.su/marketplace/1923917.xml'
+    download_path = Services::Import::DownloadPath+'/public/1923917.xml'
     File.delete(download_path) if File.file?(download_path).present?
 
     RestClient.get( input_path ) { |response, request, result, &block|
@@ -136,10 +139,13 @@ private
     @excel_price.update!(file_status: 'process')
 
     all_categories = collect_main_list_cat_info(@categories)
+    #Если parent_id нет в списке, то для главного листа используем все категории из файла
+    we_have_cats_with_parent_id = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? false : true
 
-    select_main_cats = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? nil : all_categories.select{|c| c[:parent_id] == nil}
+    select_main_cats = we_have_cats_with_parent_id ? all_categories.select{|c| c[:parent_id] == nil} : all_categories
 
-    categories_for_list = select_main_cats.present? ? select_main_cats : all_categories.select{|c| c[:parent_id] == select_main_cats[0][:id]}  #all_categories
+    categories_for_list = select_main_cats #select_main_cats.present? ? select_main_cats : all_categories.select{|c| c[:parent_id] == select_main_cats[0][:id]}  #all_categories
+    
     p = Axlsx::Package.new
     wb = p.workbook
     # style section

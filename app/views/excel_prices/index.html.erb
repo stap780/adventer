@@ -5,13 +5,12 @@
       <div class="h6">Всего - <%= ExcelPrice.count %></div>
     </div>
   </div>
-  <div class="col-10 pl-0 pr-0 row">
+  <div class="col-8 pl-0 pr-0 row">
     <div class="col-2">
       <div class="btn-group p-0" role="group" aria-label="Button group with nested dropdown">
         <div class="btn-group" role="group">
           <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle btn-sm" data-bs-toggle="dropdown">Действия</button>
           <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-            <%= link_to 'Создать', new_excel_price_path, class: 'dropdown-item' %>
             <%= link_to 'Загрузить полный каталог', get_full_catalog_excel_prices_path, class: 'dropdown-item' %>
           </div>
         </div>
@@ -32,7 +31,10 @@
       <%= link_to '<span class="oi oi-trash"></span>'.html_safe, delete_selected_excel_prices_path, class: 'btn btn-secondary', id: 'deleteAll', remote: true %>
     </div>
     <% end %>
-</div>
+  </div>
+  <div class="col-2 d-flex justify-content-end">
+    <%= link_to 'Создать', new_excel_price_path, class: 'btn btn-secondary btn-sm' %>
+  </div>
 </div>
 
 <div class="card card-body border-light shadow-sm table-wrapper table-responsive pt-0">
@@ -40,6 +42,7 @@
   <thead>
     <tr class="text-secondary">
       <th><%= check_box_tag 'selectAll', 'selectAll'%></th>
+      <th>#</th>
       <th>Дата</th>
       <th>Название</th>
       <th>Ссылка</th>
@@ -52,6 +55,7 @@
     <% @excel_prices.each do |excel_price| %>
       <tr class="align-middle">
         <td><%= check_box_tag "excel_price_ids[]", excel_price.id %></td>
+        <td><%= excel_price.id %></td>
         <td><%= excel_price.created_at.strftime("%d/%m/%Y") %></td>
         <td><%= excel_price.title %></td>
         <td><%= excel_price.link %></td>

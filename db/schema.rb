@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_04_22_101826) do
+ActiveRecord::Schema.define(version: 2024_12_19_083909) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
@@ -168,6 +168,7 @@ ActiveRecord::Schema.define(version: 2023_04_22_101826) do
     t.datetime "updated_at", null: false
     t.integer "insid"
     t.integer "insvarid"
+    t.boolean "our", default: false
   end
 
   create_table "roles", force: :cascade do |t|
