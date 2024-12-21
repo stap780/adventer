@@ -24,6 +24,9 @@ env 'GEM_HOME', ENV['GEM_HOME']
 set :output, "#{path}/log/cron.log"
 set :chronic_options, hours24: true
 
+every 1.day, at: '05:00' do #
+  runner 'Services::Import.load_all_catalog_xml'
+end
 every 1.day, at: '06:00' do #
   runner 'ImportProductJob.perform_later'
 end
@@ -36,6 +39,3 @@ every 1.day, at: '23:45' do #
   rake 'file:create_production_log_zip_every_day'
 end
 
-every 1.day, at: '05:00' do #
-  runner 'Services::Import.load_all_catalog_xml'
-end

@@ -116,10 +116,10 @@ class Services::Import
     RestClient.get( input_path ) { |response, request, result, &block|
       case response.code
       when 200
-        f = File.new(download_path, "wb")
+        f = File.new(download_path, 'wb')
         f << response.body
         f.close
-        puts "load_all_catalog_xml load and write"
+        puts 'load_all_catalog_xml load and write'
       else
         response.return!(&block)
       end
@@ -243,12 +243,12 @@ private
     puts "=== finish create main sheet ==="
 
     # row_index_for_titles_array = []
-    puts "=== start create seconds collections sheets ==="
-    puts "seconds collections categories_for_list count => "+categories_for_list.count.to_s
+    puts '=== start create seconds collections sheets ==='
+    puts "seconds collections categories_for_list count => #{categories_for_list.count}"
 
     categories_for_list.each_with_index do |cat, index|
       row_index_for_titles_array = []
-      puts "-> start create sheet -> "+cat[:title]
+      puts "-> start create sheet -> #{cat[:title]}"
       notice_text = Axlsx::RichText.new
       notice_text.add_run('Подсказка: ', :b => true)
       notice_text.add_run('для того чтобы открыть позицию на сайте нажмите на наименование/фото товара')
@@ -484,14 +484,15 @@ private
   end
 
   def check_our_product(offer)
-    puts "     start check_our_product => "+Time.now.to_s
+    puts "     start check_our_product => #{Time.now}"
     check = false
-    our_sku = ['ФД','АДВ','АДВСМ','ФО','УК']
-    vendorCode = offer.css('vendorCode').text
-    if vendorCode.present?
-      check = our_sku.any?{|a| vendorCode.include?(a) && !vendorCode.include?('ФДИ')}
-    end
-    puts "     finish check_our_product => "+Time.now.to_s
+    # our_sku = ['ФД','АДВ','АДВСМ','ФО','УК']
+    # vendorCode = offer.css('vendorCode').text
+    # if vendorCode.present?
+    #   check = our_sku.any?{|a| vendorCode.include?(a) && !vendorCode.include?('ФДИ')}
+    # end
+    check = true if offer.css('param[name="Наше производство"]').present? && offer.css('param[name="Наше производство"]').text == 'да'
+    puts "     finish check_our_product => #{Time.now}"
     check
   end
 
