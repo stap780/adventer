@@ -1,8 +1,8 @@
 class Services::Import
   require 'open-uri'
-  require "image_processing/mini_magick"
+  require 'image_processing/mini_magick'
 
-  DownloadPath = Rails.env.development? ? "#{Rails.root}" : "/var/www/adventer/shared"
+  DownloadPath = Rails.env.development? ? "#{Rails.root}" : '/var/www/adventer/shared'
   MainText = 'Общество с ограниченной ответственностью «Адвентер»
 
   188802, ЛО, г.Выборг, ул. Данилова, д.15 корп.1, оф.248
@@ -33,7 +33,7 @@ class Services::Import
     @file_data = nil
     @file_variants = nil
     excel_file_name = "#{@excel_price.id.to_s}_file.xlsx"
-    @path = Rails.env.development? ? "#{Rails.public_path}/" : "/var/www/adventer/shared/public/"
+    @path = Rails.env.development? ? "#{Rails.public_path}/" : '/var/www/adventer/shared/public/'
     @excel_path = @path+excel_file_name
     @excel_price_offers = nil
     @categories = nil
@@ -45,7 +45,7 @@ class Services::Import
     collect_variants_from_xml
     create_xlsx
   end
-  
+
   def self.product
     require 'open-uri'
     puts "=====>>>> СТАРТ InSales EXCEL #{Time.now}"
@@ -101,13 +101,13 @@ class Services::Import
   	# ProductMailer.notifier_process(current_process).deliver_now
     # 
   end
-  
+
   def self.download_remote_file(url)
     ascii_url = URI.encode(url)
     response = Net::HTTP.get_response(URI.parse(ascii_url))
     StringIO.new(response.body)
   end
-  
+
   def self.load_all_catalog_xml
     input_path = 'https://adventer.su/marketplace/1923917.xml'
     download_path = Services::Import::DownloadPath+'/public/1923917.xml'
@@ -129,23 +129,20 @@ class Services::Import
 private
 
   def create_xlsx
-
     puts "===>>>> СТАРТ import excel_price #{Time.now.to_s}"
-    
     # puts "=====>>>> СТАРТ import all_offers #{Time.now.to_s}"
     # all_offers = Nokogiri::XML(File.open(Services::Import::DownloadPath+"/public/1923917.xml")).xpath("//offer")
-    # puts "=====>>>> Finish import all_offers #{Time.now.to_s}"    
-    
+    # puts "=====>>>> Finish import all_offers #{Time.now.to_s}"
     @excel_price.update!(file_status: 'process')
 
     all_categories = collect_main_list_cat_info(@categories)
-    #Если parent_id нет в списке, то для главного листа используем все категории из файла
+    # Если parent_id нет в списке, то для главного листа используем все категории из файла
     we_have_cats_with_parent_id = all_categories.map{|c| c[:parent_id]}.all?(&:nil?) ? false : true
 
     select_main_cats = we_have_cats_with_parent_id ? all_categories.select{|c| c[:parent_id] == nil} : all_categories
 
     categories_for_list = select_main_cats #select_main_cats.present? ? select_main_cats : all_categories.select{|c| c[:parent_id] == select_main_cats[0][:id]}  #all_categories
-    
+
     p = Axlsx::Package.new
     wb = p.workbook
     # style section
@@ -491,7 +488,7 @@ private
     # if vendorCode.present?
     #   check = our_sku.any?{|a| vendorCode.include?(a) && !vendorCode.include?('ФДИ')}
     # end
-    check = true if offer.css('param[name="Наше производство"]').present? && offer.css('param[name="Наше производство"]').text == 'да'
+    check = true if offer.xpath("param [@name='Наше производство']").present? && offer.xpath("param [@name='Наше производство']").text == 'да'
     puts "     finish check_our_product => #{Time.now}"
     check
   end
