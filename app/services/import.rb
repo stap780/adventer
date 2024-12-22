@@ -1,3 +1,6 @@
+#  encoding : utf-8
+#  
+#  Services::Import
 class Services::Import
   require 'open-uri'
   require 'image_processing/mini_magick'
@@ -488,9 +491,22 @@ private
     # if vendorCode.present?
     #   check = our_sku.any?{|a| vendorCode.include?(a) && !vendorCode.include?('ФДИ')}
     # end
-    check = true if offer.xpath("param [@name='Наше производство']").present? && offer.xpath("param [@name='Наше производство']").text == 'да'
+    check = true if offer.xpath('param [@name="Наше производство"]').present? && offer.xpath("param [@name='Наше производство']").text == 'да'
     puts "     finish check_our_product => #{Time.now}"
+    
+    offer.elements.each do |element|
+      if element.name == 'param'
+        puts 'we find it'
+        puts element.attribute('name').children.text.downcase.squish.encoding
+        puts element.attribute('name').children.text.downcase.squish == 'Наше производство'.downcase
+        puts '----'
+      else
+        puts  'all bad'
+      end
+    end
+    
     check
+
   end
 
   def process_image(link, filename)
